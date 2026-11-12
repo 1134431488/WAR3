@@ -1,0 +1,113 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fnil\fcharset2 Symbol;}}
+{\*\generator Riched20 10.0.22000}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\b\f0\fs40\lang9 Changelog\par
+\b0\fs20 Retera Model Studio\par
+
+\pard\sa200\sl276\slmult1\b\fs32 Changelog\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 The changelog below might be out of date. If in doubt, it should not hurt to cross reference with the information on the Hive Workshop in the "Tools" page for Retera Model Studio: https ://www.hiveworkshop.com/threads/reteras-model-studio.316000/\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.4f:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Tried a fix based on a user report to change the fundamental function used for adding animations from one model into another so that it would nuke any data on the timeline in the area in which the new animation data was being inserted. This was a test in response to the user Kaizer on Discord complaining about an animation transfer problem that I did not have the files for locally to reproduce on my machine, and I cannot confirm that the code change will fix his issue, but the code change should be harmless for the expected use case of animation transfers in this program.\b\par
+{\pntext\f1\'B7\tab}\b0 Changed how HD mesh is previewed so that it might appear to fade during its Decay Flesh animation. There might be a couple of other cases that also fade in a manner more similar to Warcraft III: Reforged when previewing. The model data saved by the editing tools is not affected.\b\par
+{\pntext\f1\'B7\tab}\b0 Fixed the "KnightStatueA" case when using the HD SD texture baking utility; apparently it had a parallel tangent/normal pair in a way that confused my code, and so I told the code to do nothing when it encounters that case instead of crashing. It might create glitched pixels or something but the code should no longer crash.\b\par
+{\pntext\f1\'B7\tab}\b0 A change was made based on the request from @Wolfe on Discord so that spinning the camera more than 90 degrees does not do an instant "flip" of the camera unless we reach a larger angle, such as maybe 180 or 360 degrees.\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.4e:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 The new version 0.04.4e fixes a bug that I encountered in the ParticleEmitter parser for MDX files after someone asked me about it. The parser would exit the Retera Model Studio application when seeing animated Speed on a ParticleEmitter with no warning, and lose any open user files.\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.4d:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Using the dropdown menus for "Edit > Delete" was broken from 0.04.3 to 0.04.4 and should be fixed again to delete vertices how it used to. (It doesn't work on the Tracks view yet, unlike the DEL hotkey, though.)\par
+{\pntext\f1\'B7\tab}Using "convert HD to SD (experimental)" had a bug that was reported to me where some model geometry would be deleted in custom, nonstandard models (when LoD == -1 but not 0). This has been changed so that the geometry in question is retained in the converted SD model.\par
+{\pntext\f1\'B7\tab}Fixed a bug reported by @Leo Akastenix on Discord which caused 3D mesh to display differently on the "View" tab versus how the "View in 3D" of Hive and the Warcraft 3 game actually work (For anyone interested in the technicality behind this, you can review my source code change. This pertains to a case when we use GeosetId instead of GeosetAnimId in a Bone when optimizing it out in the previewer.) Visually, this was causing a geoset to disappear on a test model when the geoset should have been visible.\par
+{\pntext\f1\'B7\tab}Some logging message if you attach a console to the program used to print out "Whoa!2" if you encounter an unexpected shader type ID in an MDX1100 (patch 1.33) asset. Now instead it will print "MDX11 parser reached unexpected shader type ID: 2" (Most likely no user will ever see this fix)\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.4c:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 This bundle has been updated with a small update 0.04.4c that changed the way the "Recalculate Tangents" function works, as well as maybe some tweaks to the experimental function to convert HD to SD or something like that. So, these changes might be invisible to most users.\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.4b:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 The 0.04.4 version has been upgraded to 0.04.4b to possibly fix a bug related to saving Classic "SD" models that was introduced in the changes (to support Patch 1.33), and I removed the "Demon" and "PTR" tags from the program naming so that it is clear that this will eventually probably become the only version of the 0.04 program in the future. (For 0.05+ builds, you can find the Twilac version on GitHub releases or on the Retera Model Studio Users Group discord server)\par
+{\pntext\f1\'B7\tab}I also added an option in the settings menu on 0.04.4b that allows users to check a box (and then restart the program) that might automatically "fix" a visual issue some users are experiencing on Windows systems that causes visual artifacts in the Java Swing UI part of the program.\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.4:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Changed the application to run on Java 17 and use OpenGL shaders to support better previewing of Reforged graphics. Credits to the Twilac version of Retera Model Studio for some of the config settings used for configuring this program for Java 17.\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.2b:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Fixed a bug in "Edit/delete model components" reported by Hive user @Makkad (retains FaceFX chunks now)\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.2:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Tiny change requested by discord user VictorZ that allows "Rotate Type-In" to work in the Animation Editor. (The code for this was copied almost directly from the Twilac version of 0.05, so you should seriously probably just use 0.05!)\b\par
+
+\pard\sa200\sl276\slmult1 v0.04.1:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Opening a file in a folder does not walk the directory tree of that folder\par
+{\pntext\f1\'B7\tab}Scripts -> Skin Splice function added upon request from Vulfar\par
+
+\pard\sa200\sl276\slmult1\b v0.04 for 1.32.10:\b0\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 Fixes the program to work with the new Warcraft III Patch 1.32.10 that changed the TFVS formatting for some reason.\par
+{\pntext\f1\'B7\tab}Includes some really minor internal bug fixes over the previous version\par
+
+\pard\sa200\sl276\slmult1\b v0.04:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Merged the version known as "Retera Model Studio Reforged Hack" to be the mainline version of the tool going forward (this version includes all of the fixes listed here)\par
+{\pntext\f1\'B7\tab}Added support for Reforged assets and a bunch of bug fixes related to working with those\par
+{\pntext\f1\'B7\tab}Added "Scripts -> Assign FormatVersion 800" to convert Reforged Classic Models to the legacy classic model format, as well as "Scripts -> Assign FormatVersion 1000" to convert legacy game client models to match the format used by the "Classic Graphics" of Reforged.\par
+{\pntext\f1\'B7\tab}Added a "Reforged Graphics Mode" and "Classic Graphics Mode" in the data sources chooser panel\par
+{\pntext\f1\'B7\tab}Added the "Model" tab which is buggy and unfinished\b\par
+
+\pard\sa200\sl276\slmult1 v0.03 Public Beta:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1\b0 Changed the program to use Java 11. Had trouble exporting the JAR from Eclipse, so I changed it back to Java 8 for now.\par
+{\pntext\f1\'B7\tab}Changed the program to use the latest version of DrSuperGood's JCASC, which requires Java 11 to use, then I modified his code so that it did not require Java 11 so that we could continue deployment in the previous fashion.\par
+{\pntext\f1\'B7\tab}Changed the startup sequence to use a "data source chooser" view, which is also available in Preferences. This allows users to load CASC or MPQ data in a way that is intended to be straightforward and clear to the user, and for CASC data the user able to choose the locale to load from the game. Locales that are present in the CASC's list but have not been downloaded from Blizzard are shown in dark red. These dark red options won't work until you launch Warcraft III at least one time using that locale.\par
+{\pntext\f1\'B7\tab}Changed the startup sequence to return the user to the "data source chooser" any time that the program crashes during startup, so that the user is always able to reconfigure their settings.\par
+{\pntext\f1\'B7\tab}Changed the model previewer to include the rendering of Particle Emitters, so that users can have a better feel for how their models might look in-game. This is a nontrivial task that involves many hundreds of lines of code replicating the behavior of the game and it was only possible because of the works of Ghostwolf, which I translated nearly directly from JavaScript into Java.\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li1440\sa200\sl276\slmult1 "Squirt" mode particles will emit at random times when they should not because of a difference between my code and Ghostwolf's code (his does not have this bug).\par
+{\pntext\f1\'B7\tab}Also, priority plane and layering are known to have issues. \par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 Added a JSON parser that loads the "filealiases.json" data when using CASC. This file is used by the 1.30 and 1.31 clients to support removed legacy files inside the Warcraft III game, and it will now be supported by the Retera Model Studio when viewing models. This will fix missing textures in some instances when the textures were not missing in-game.\par
+{\pntext\f1\'B7\tab}Changed the default application data folder to be named "ReteraStudio" instead of "JWC3". This change removes bad interactions with the "Matrix Eater" application where the "Retera Model Studio" and "Matrix Eater" would write clashing versions of the same data to the same settings file (see "AppData/Roaming/ReteraStudio" on your computer).\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li1440\sa200\sl276\slmult1 This will cause a reset of all user settings for the Retera Model Studio version v0.03.\par
+{\pntext\f1\'B7\tab}If you wish to avoid a settings reset, copy your settings file from "AppData/Roaming/JWC3". However I do not promise backwards compatibility.\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 Fixed an issue with the Quick Browse option so that turning it off and on will work correctly.\par
+{\pntext\f1\'B7\tab}Added a scroll bar to the "Change Animation Lengths (by Scaling)" popup. (Thanks Mythic!) This popup is now listed under the "Scripts" menu.\par
+{\pntext\f1\'B7\tab}Added 3 new GUI Themes: HiFi, Acryl, and Aluminium. These are all from the JTattoo library. Also, the "Dark" theme was technically the "Noire" theme from the JTattoo library, and it has been renamed accordingly. Aluminium is now the default theme (this can still be changed in the Preferences Window).\par
+{\pntext\f1\'B7\tab}Changed code in the BLP loading pipeline used for rendering models and icons that aims to avoid destruction of texture data that is beneath an alpha channel yet loaded on a model's surface regardless of the alpha channel. Previously visual artifacts were visible in some cases that were not in accordance with how the textures would display in the Warcraft III game.\par
+{\pntext\f1\'B7\tab}Added an "Edit" button in the Time Bound Chooser panel, but it does not actually work yet and will be fixed in a future version.\par
+{\pntext\f1\'B7\tab}Changed some code with the "X" button on the program and how closing model files functions, so that it should not be able to bug out and fail to close a model or fail to close the application in a way unexpected by the user.\par
+{\pntext\f1\'B7\tab}Added a system in the 3D displays that compares the aspect ratios known to the application with the aspect ratios known to the graphics card that attempts to use this information to fix the renderer when used on desktops that have the UI Scale setting specified. This was tested on Windows 10 with the UI scale, and it still fails on multiple monitor configurations where the second or third monitor have differing UI Scale specified. However, it should always work correctly on the main display when previously it may not have worked correctly at all.\par
+{\pntext\f1\'B7\tab}Added a Preferences option to disable rendering particle emitters, as well as a separate option to disable rendering particle emitters in the Editor view.\par
+{\pntext\f1\'B7\tab}Changed the "Use Boxes for Pivot Points" option so that it also affects the 2D displays in the Animation Editor.\par
+{\pntext\f1\'B7\tab}Changed the Right-Click mouse button not to do anything on the Outliner widget, so that it can popup an "Edit" option on a popup menu in a future version of the software.\par
+{\pntext\f1\'B7\tab}Changed the code that converts program data to MDX at Save time, so that some models that previously would not save due to state corruption inside the Model Studio will now be able to save. There may be more similar bugs yet to be fixed.\par
+{\pntext\f1\'B7\tab}Changed the SLK parser used to load Unit Data so that it should be able to load data from the Reign of Chaos and from Project Revolution, in case users wish to load that data using the new game data source choosing settings.\par
+{\pntext\f1\'B7\tab}Changed the Unit Browser to reload its contents when the program data source is changed. Previously, the "View -> Change Game Directory" option was likely to change the internal setting but keep previously cached information in the Unit Browser.\par
+{\pntext\f1\'B7\tab}Added a command line option, "-forcedataprompt" to force the program to start with the Data Source Chooser window, so that users can specify their Warcraft III game data source without launching the application.\par
+{\pntext\f1\'B7\tab}Changed how missing textures resolve so that they should resolve to a white surface. This should hopefully remove the irritating popup.\par
+{\pntext\f1\'B7\tab}Attempted to make the Perspective view constantly repaint itself to always update dynamically, however in practice this is still not working in some cases.\par
+{\pntext\f1\'B7\tab}Changed the texture loader so that a default Tree texture will be loaded when the replaceable texture ID is not known. This does not yet help with previewing cliff models but it means that the Mountain Giant and similar models should preview decently.\par
+{\pntext\f1\'B7\tab}Added a scroll bar to the Texture Manager shown with "Tools -> Edit Textures" for use on models with many textures\par
+{\pntext\f1\'B7\tab}Reorganized some of the program menus to attempt to make them more logical (Based on some suggestions from Hayate, many thanks! If only this program could be updated as quickly as his mockup UI!) More changes to these may be added in a future version, as they are still rather disorganized.\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li1440\sa200\sl276\slmult1 The new "Scripts" is a place for one-off script utilities that don't fit anywhere else, and maybe be user modifiable to include custom code in the future. At this time, it is only a preset list.\par
+{\pntext\f1\'B7\tab}"Scripts -> Export Animated to Static Mesh" is a new option to build snapshot models. Unfortunately, it only snapshots the currently timeline in the Editor view, not in the Viewer that you see when you start the application. Also, it discards all node information, including Billboarded nodes, so camera-centric planes will be left to face forward instead of the camera.\par
+{\pntext\f1\'B7\tab}"Edit -> Optimize" now include an option to merge all geosets that share like materials and visibility that is called "Minimize Geosets". Misha and a few other users have been asking for this option for years. I have not tested it very extensively and there may still be bugs in it. It worked on one or two sample cases that I experimented with.\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 In v0.01/v0.02 I added an option in Program Preferences to allow loading Non-BLP textures, so that users can open a PNG file or a model that references a PNG file even though these are generally not valid MDX files when used inside the Warcraft III game. This option may have been changed in the newer one to fix bugs, according to some of my code history information.\par
+{\pntext\f1\'B7\tab}Fixed a crash relating to parsing WTS files for unit data, such as when the Data Source Chooser is used to load a custom map file as an MPQ.\par
+{\pntext\f1\'B7\tab}Changed "Error: A matrix's bone id was not referencing a real bone!" to be a console log line instead of a popup, so that users do not receive a spamming wave of popups when opening a model file.\par
+{\pntext\f1\'B7\tab}Changed the model parser to accept models with missing Pivot Points (as the Warcraft III game does), so that the Retera Model Studio is able to open some MDX models that previously would have caused a crash popup.\par
+}
+ 

@@ -1,0 +1,18 @@
+# 整体跳过汉化的 class 前缀（按 jar 内路径，支持包级或类名级前缀）
+# 这些类把同一字符串同时用于「界面显示」和「程序内部判断」：
+#   - 按类名 switch 分支       （ModelComponentBrowserTree）
+#   - 与枚举/模型数据名比较     （MDLSnapshot、ImportPanelNoGui2）
+#   - 生成写入模型的默认节点名  （DrawBoneActivity）
+#   - 与树节点名做 equals 判断  （CheckableDummyElement）
+#   - 视图方向 switch 分支      （DisplayViewUgg）
+#   - 外观主题名 switch 分支    （DataSrcChooserTestPanel）
+# 若改写，字符串配对会失配，故这些类保留原英文；其余界面照常汉化。
+# 每行一个前缀，# 开头为注释。
+
+com/hiveworkshop/rms/ui/gui/modeledit/MDLSnapshot
+com/hiveworkshop/rms/ui/gui/modeledit/creator/activity/DrawBoneActivity
+com/hiveworkshop/rms/ui/gui/modeledit/modelcomponenttree/ModelComponentBrowserTree
+com/hiveworkshop/rms/ui/gui/modeledit/modelviewtree/CheckableDummyElement
+com/hiveworkshop/rms/ui/gui/modeledit/importpanel/ImportPanelNoGui2
+com/hiveworkshop/rms/ui/application/edit/mesh/viewport/DisplayViewUgg
+com/hiveworkshop/rms/ui/preferences/dataSourceChooser/DataSrcChooserTestPanel

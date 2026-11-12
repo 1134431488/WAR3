@@ -1,0 +1,660 @@
+Compiled from "ComponentHDLayer.java"
+public class com.hiveworkshop.rms.ui.application.model.material.ComponentHDLayer extends com.hiveworkshop.rms.ui.application.model.ComponentPanel<com.hiveworkshop.rms.editor.model.Layer> {
+  private java.lang.String valuePanelConstraints;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.TextureValuePanel texturePanel;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.FloatValuePanel alphaPanel;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.FloatValuePanel emissiveGainPanel;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.ColorValuePanel fresnelColorPanel;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.FloatValuePanel fresnelOpacityPanel;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.FloatValuePanel fresnelTeamColor;
+
+  private final javax.swing.JPanel texturePreviewPanel;
+
+  private final javax.swing.JPanel layerFlagsPanel;
+
+  private com.hiveworkshop.rms.util.TwiComboBox<com.hiveworkshop.rms.editor.model.util.FilterMode> filterModeDropdown;
+
+  private javax.swing.JButton tVertexAnimButton;
+
+  private com.hiveworkshop.rms.ui.application.model.editors.IntEditorJSpinner coordIdSpinner;
+
+  public com.hiveworkshop.rms.ui.application.model.material.ComponentHDLayer(com.hiveworkshop.rms.ui.gui.modeledit.ModelHandler, com.hiveworkshop.rms.editor.model.util.HD_Material_Layer);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #1                  // Method com/hiveworkshop/rms/ui/application/model/ComponentPanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;)V
+       5: aload_0
+       6: ldc           #7                  // String wrap, growx, hidemode 2
+       8: putfield      #9                  // Field valuePanelConstraints:Ljava/lang/String;
+      11: aload_0
+      12: new           #15                 // class net/miginfocom/swing/MigLayout
+      15: dup
+      16: ldc           #17                 // String fill
+      18: ldc           #19                 // String [][][grow]
+      20: ldc           #21                 // String [fill]
+      22: invokespecial #23                 // Method net/miginfocom/swing/MigLayout."<init>":(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+      25: invokevirtual #26                 // Method setLayout:(Ljava/awt/LayoutManager;)V
+      28: getstatic     #30                 // Field java/awt/Color.LIGHT_GRAY:Ljava/awt/Color;
+      31: invokestatic  #36                 // Method javax/swing/BorderFactory.createLineBorder:(Ljava/awt/Color;)Ljavax/swing/border/Border;
+      34: astore_3
+      35: aload_0
+      36: aload_3
+      37: aload_2
+      38: invokevirtual #42                 // Method com/hiveworkshop/rms/editor/model/util/HD_Material_Layer.getLayerName:()Ljava/lang/String;
+      41: invokedynamic #48,  0             // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      46: invokestatic  #52                 // Method javax/swing/BorderFactory.createTitledBorder:(Ljavax/swing/border/Border;Ljava/lang/String;)Ljavax/swing/border/TitledBorder;
+      49: invokevirtual #56                 // Method setBorder:(Ljavax/swing/border/Border;)V
+      52: aload_0
+      53: aload_0
+      54: invokevirtual #60                 // Method getLeftHandPanel:()Ljavax/swing/JPanel;
+      57: ldc           #64                 // String spany
+      59: invokevirtual #66                 // Method add:(Ljava/awt/Component;Ljava/lang/Object;)V
+      62: aload_0
+      63: new           #70                 // class javax/swing/JPanel
+      66: dup
+      67: new           #15                 // class net/miginfocom/swing/MigLayout
+      70: dup
+      71: ldc           #72                 // String ins 0, gap 0
+      73: invokespecial #74                 // Method net/miginfocom/swing/MigLayout."<init>":(Ljava/lang/String;)V
+      76: invokespecial #77                 // Method javax/swing/JPanel."<init>":(Ljava/awt/LayoutManager;)V
+      79: putfield      #79                 // Field layerFlagsPanel:Ljavax/swing/JPanel;
+      82: aload_0
+      83: aload_0
+      84: getfield      #79                 // Field layerFlagsPanel:Ljavax/swing/JPanel;
+      87: ldc           #83                 // String
+      89: invokevirtual #66                 // Method add:(Ljava/awt/Component;Ljava/lang/Object;)V
+      92: aload_0
+      93: new           #70                 // class javax/swing/JPanel
+      96: dup
+      97: new           #15                 // class net/miginfocom/swing/MigLayout
+     100: dup
+     101: ldc           #85                 // String gap 0, ins 0, fill
+     103: ldc           #87                 // String [grow]
+     105: ldc           #87                 // String [grow]
+     107: invokespecial #23                 // Method net/miginfocom/swing/MigLayout."<init>":(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+     110: invokespecial #77                 // Method javax/swing/JPanel."<init>":(Ljava/awt/LayoutManager;)V
+     113: putfield      #89                 // Field texturePreviewPanel:Ljavax/swing/JPanel;
+     116: aload_0
+     117: aload_0
+     118: getfield      #89                 // Field texturePreviewPanel:Ljavax/swing/JPanel;
+     121: ldc           #92                 // String growx, top
+     123: invokevirtual #66                 // Method add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     126: return
+
+  public com.hiveworkshop.rms.ui.application.model.ComponentPanel<com.hiveworkshop.rms.editor.model.Layer> setSelectedItem(com.hiveworkshop.rms.editor.model.Layer);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       5: aload_0
+       6: getfield      #98                 // Field texturePanel:Lcom/hiveworkshop/rms/ui/application/model/editors/TextureValuePanel;
+       9: aload_1
+      10: invokevirtual #102                // Method com/hiveworkshop/rms/editor/model/Layer.getTextureId:()I
+      13: invokestatic  #108                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      16: aload_1
+      17: ldc           #116                // String 贴图 ID
+      19: invokevirtual #118                // Method com/hiveworkshop/rms/editor/model/Layer.find:(Ljava/lang/String;)Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;
+      22: checkcast     #122                // class com/hiveworkshop/rms/editor/model/animflag/IntAnimFlag
+      25: aload_1
+      26: ldc           #116                // String 贴图 ID
+      28: aload_0
+      29: invokedynamic #124,  0            // InvokeDynamic #1:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+      34: invokevirtual #128                // Method com/hiveworkshop/rms/ui/application/model/editors/TextureValuePanel.reloadNewValue:(Ljava/lang/Object;Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;Lcom/hiveworkshop/rms/editor/model/TimelineContainer;Ljava/lang/String;Ljava/util/function/Consumer;)V
+      37: aload_0
+      38: getfield      #134                // Field alphaPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+      41: aload_1
+      42: invokevirtual #138                // Method com/hiveworkshop/rms/editor/model/Layer.getStaticAlpha:()D
+      45: d2f
+      46: invokestatic  #142                // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
+      49: aload_1
+      50: ldc           #147                // String 透明度
+      52: invokevirtual #118                // Method com/hiveworkshop/rms/editor/model/Layer.find:(Ljava/lang/String;)Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;
+      55: checkcast     #149                // class com/hiveworkshop/rms/editor/model/animflag/FloatAnimFlag
+      58: aload_1
+      59: ldc           #147                // String 透明度
+      61: aload_0
+      62: invokedynamic #151,  0            // InvokeDynamic #2:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+      67: invokevirtual #152                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel.reloadNewValue:(Ljava/lang/Object;Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;Lcom/hiveworkshop/rms/editor/model/TimelineContainer;Ljava/lang/String;Ljava/util/function/Consumer;)V
+      70: aload_0
+      71: getfield      #155                // Field fresnelTeamColor:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+      74: aload_1
+      75: invokevirtual #158                // Method com/hiveworkshop/rms/editor/model/Layer.getFresnelTeamColor:()D
+      78: d2f
+      79: invokestatic  #142                // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
+      82: aload_1
+      83: ldc           #161                // String 菲涅尔队伍颜色
+      85: invokevirtual #118                // Method com/hiveworkshop/rms/editor/model/Layer.find:(Ljava/lang/String;)Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;
+      88: checkcast     #149                // class com/hiveworkshop/rms/editor/model/animflag/FloatAnimFlag
+      91: aload_1
+      92: ldc           #161                // String 菲涅尔队伍颜色
+      94: aload_0
+      95: invokedynamic #163,  0            // InvokeDynamic #3:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+     100: invokevirtual #152                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel.reloadNewValue:(Ljava/lang/Object;Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;Lcom/hiveworkshop/rms/editor/model/TimelineContainer;Ljava/lang/String;Ljava/util/function/Consumer;)V
+     103: aload_0
+     104: getfield      #164                // Field fresnelOpacityPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     107: aload_1
+     108: invokevirtual #167                // Method com/hiveworkshop/rms/editor/model/Layer.getFresnelOpacity:()D
+     111: d2f
+     112: invokestatic  #142                // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
+     115: aload_1
+     116: ldc           #170                // String 菲涅尔不透明度
+     118: invokevirtual #118                // Method com/hiveworkshop/rms/editor/model/Layer.find:(Ljava/lang/String;)Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;
+     121: checkcast     #149                // class com/hiveworkshop/rms/editor/model/animflag/FloatAnimFlag
+     124: aload_1
+     125: ldc           #170                // String 菲涅尔不透明度
+     127: aload_0
+     128: invokedynamic #172,  0            // InvokeDynamic #4:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+     133: invokevirtual #152                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel.reloadNewValue:(Ljava/lang/Object;Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;Lcom/hiveworkshop/rms/editor/model/TimelineContainer;Ljava/lang/String;Ljava/util/function/Consumer;)V
+     136: aload_0
+     137: getfield      #173                // Field fresnelColorPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel;
+     140: aload_1
+     141: invokevirtual #177                // Method com/hiveworkshop/rms/editor/model/Layer.getFresnelColor:()Lcom/hiveworkshop/rms/util/Vec3;
+     144: aload_1
+     145: ldc           #181                // String 菲涅尔颜色
+     147: invokevirtual #118                // Method com/hiveworkshop/rms/editor/model/Layer.find:(Ljava/lang/String;)Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;
+     150: checkcast     #183                // class com/hiveworkshop/rms/editor/model/animflag/Vec3AnimFlag
+     153: aload_1
+     154: ldc           #181                // String 菲涅尔颜色
+     156: aload_0
+     157: invokedynamic #185,  0            // InvokeDynamic #5:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+     162: invokevirtual #186                // Method com/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel.reloadNewValue:(Ljava/lang/Object;Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;Lcom/hiveworkshop/rms/editor/model/TimelineContainer;Ljava/lang/String;Ljava/util/function/Consumer;)V
+     165: aload_0
+     166: getfield      #189                // Field emissiveGainPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     169: aload_1
+     170: invokevirtual #192                // Method com/hiveworkshop/rms/editor/model/Layer.getEmissive:()D
+     173: d2f
+     174: invokestatic  #142                // Method java/lang/Float.valueOf:(F)Ljava/lang/Float;
+     177: aload_1
+     178: ldc           #195                // String 自发光增益
+     180: invokevirtual #118                // Method com/hiveworkshop/rms/editor/model/Layer.find:(Ljava/lang/String;)Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;
+     183: checkcast     #149                // class com/hiveworkshop/rms/editor/model/animflag/FloatAnimFlag
+     186: aload_1
+     187: ldc           #195                // String 自发光增益
+     189: aload_0
+     190: invokedynamic #197,  0            // InvokeDynamic #6:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+     195: invokevirtual #152                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel.reloadNewValue:(Ljava/lang/Object;Lcom/hiveworkshop/rms/editor/model/animflag/AnimFlag;Lcom/hiveworkshop/rms/editor/model/TimelineContainer;Ljava/lang/String;Ljava/util/function/Consumer;)V
+     198: aload_0
+     199: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+     202: invokevirtual #202                // Method com/hiveworkshop/rms/ui/gui/modeledit/ModelHandler.getModel:()Lcom/hiveworkshop/rms/editor/model/EditableModel;
+     205: invokevirtual #208                // Method com/hiveworkshop/rms/editor/model/EditableModel.getFormatVersion:()I
+     208: invokestatic  #213                // Method com/hiveworkshop/rms/editor/model/util/ModelUtils.isFresnelColorLayerSupported:(I)Z
+     211: istore_2
+     212: aload_0
+     213: getfield      #173                // Field fresnelColorPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel;
+     216: iload_2
+     217: invokevirtual #219                // Method com/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel.setVisible:(Z)V
+     220: aload_0
+     221: getfield      #164                // Field fresnelOpacityPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     224: iload_2
+     225: invokevirtual #223                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel.setVisible:(Z)V
+     228: aload_0
+     229: getfield      #155                // Field fresnelTeamColor:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     232: iload_2
+     233: invokevirtual #223                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel.setVisible:(Z)V
+     236: aload_0
+     237: getfield      #79                 // Field layerFlagsPanel:Ljavax/swing/JPanel;
+     240: invokevirtual #224                // Method javax/swing/JPanel.removeAll:()V
+     243: aload_0
+     244: getfield      #79                 // Field layerFlagsPanel:Ljavax/swing/JPanel;
+     247: new           #228                // class com/hiveworkshop/rms/ui/application/model/material/LayerFlagsPanel
+     250: dup
+     251: aload_0
+     252: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+     255: aload_1
+     256: invokespecial #230                // Method com/hiveworkshop/rms/ui/application/model/material/LayerFlagsPanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Lcom/hiveworkshop/rms/editor/model/Layer;)V
+     259: ldc           #83                 // String
+     261: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     264: aload_0
+     265: getfield      #234                // Field filterModeDropdown:Lcom/hiveworkshop/rms/util/TwiComboBox;
+     268: aload_1
+     269: invokevirtual #238                // Method com/hiveworkshop/rms/editor/model/Layer.getFilterMode:()Lcom/hiveworkshop/rms/editor/model/util/FilterMode;
+     272: invokevirtual #242                // Method com/hiveworkshop/rms/util/TwiComboBox.setSelectedItem:(Ljava/lang/Object;)V
+     275: aload_0
+     276: getfield      #248                // Field tVertexAnimButton:Ljavax/swing/JButton;
+     279: aload_0
+     280: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+     283: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+     286: invokevirtual #252                // Method com/hiveworkshop/rms/editor/model/Layer.getTextureAnim:()Lcom/hiveworkshop/rms/editor/model/TextureAnim;
+     289: ifnonnull     298
+     292: ldc_w         #256                // String 无
+     295: goto          311
+     298: aload_0
+     299: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+     302: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+     305: invokevirtual #252                // Method com/hiveworkshop/rms/editor/model/Layer.getTextureAnim:()Lcom/hiveworkshop/rms/editor/model/TextureAnim;
+     308: invokevirtual #258                // Method com/hiveworkshop/rms/editor/model/TextureAnim.getFlagNames:()Ljava/lang/String;
+     311: invokevirtual #263                // Method javax/swing/JButton.setText:(Ljava/lang/String;)V
+     314: aload_0
+     315: getfield      #268                // Field coordIdSpinner:Lcom/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner;
+     318: aload_0
+     319: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+     322: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+     325: invokevirtual #272                // Method com/hiveworkshop/rms/editor/model/Layer.getCoordId:()I
+     328: invokestatic  #108                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     331: invokevirtual #275                // Method com/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner.reloadNewValue:(Ljava/lang/Object;)Lcom/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner;
+     334: pop
+     335: aload_0
+     336: aload_1
+     337: invokevirtual #280                // Method com/hiveworkshop/rms/editor/model/Layer.getTextureBitmap:()Lcom/hiveworkshop/rms/editor/model/Bitmap;
+     340: invokevirtual #284                // Method updateTexturePanel:(Lcom/hiveworkshop/rms/editor/model/Bitmap;)V
+     343: aload_0
+     344: areturn
+
+  private void updateTexturePanel(com.hiveworkshop.rms.editor.model.Bitmap);
+    Code:
+       0: aload_0
+       1: getfield      #89                 // Field texturePreviewPanel:Ljavax/swing/JPanel;
+       4: invokevirtual #224                // Method javax/swing/JPanel.removeAll:()V
+       7: aload_1
+       8: ifnull        32
+      11: aload_0
+      12: aload_1
+      13: aload_0
+      14: getfield      #288                // Field model:Lcom/hiveworkshop/rms/editor/model/EditableModel;
+      17: invokevirtual #292                // Method getImagePreviewPanel:(Lcom/hiveworkshop/rms/editor/model/Bitmap;Lcom/hiveworkshop/rms/editor/model/EditableModel;)Lcom/hiveworkshop/rms/ui/util/ZoomableImagePreviewPanel;
+      20: astore_2
+      21: aload_0
+      22: getfield      #89                 // Field texturePreviewPanel:Ljavax/swing/JPanel;
+      25: aload_2
+      26: ldc_w         #296                // String growx, growy
+      29: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+      32: return
+
+  private com.hiveworkshop.rms.ui.util.ZoomableImagePreviewPanel getImagePreviewPanel(com.hiveworkshop.rms.editor.model.Bitmap, com.hiveworkshop.rms.editor.model.EditableModel);
+    Code:
+       0: aload_2
+       1: invokevirtual #298                // Method com/hiveworkshop/rms/editor/model/EditableModel.getWrappedDataSource:()Lcom/hiveworkshop/rms/filesystem/sources/DataSource;
+       4: astore_3
+       5: aload_1
+       6: aload_3
+       7: invokestatic  #302                // Method com/hiveworkshop/rms/parsers/blp/BLPHandler.getImage:(Lcom/hiveworkshop/rms/editor/model/Bitmap;Lcom/hiveworkshop/rms/filesystem/sources/DataSource;)Ljava/awt/image/BufferedImage;
+      10: astore        5
+      12: new           #308                // class com/hiveworkshop/rms/ui/util/ZoomableImagePreviewPanel
+      15: dup
+      16: aload         5
+      18: iconst_1
+      19: invokespecial #310                // Method com/hiveworkshop/rms/ui/util/ZoomableImagePreviewPanel."<init>":(Ljava/awt/Image;Z)V
+      22: astore        4
+      24: goto          101
+      27: astore        5
+      29: new           #315                // class java/awt/image/BufferedImage
+      32: dup
+      33: sipush        512
+      36: sipush        512
+      39: iconst_2
+      40: invokespecial #317                // Method java/awt/image/BufferedImage."<init>":(III)V
+      43: astore        6
+      45: aload         6
+      47: invokevirtual #320                // Method java/awt/image/BufferedImage.createGraphics:()Ljava/awt/Graphics2D;
+      50: astore        7
+      52: aload         7
+      54: getstatic     #324                // Field java/awt/Color.RED:Ljava/awt/Color;
+      57: invokevirtual #327                // Method java/awt/Graphics2D.setColor:(Ljava/awt/Color;)V
+      60: aload         7
+      62: aload         5
+      64: invokevirtual #333                // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      67: invokevirtual #339                // Method java/lang/Class.getSimpleName:()Ljava/lang/String;
+      70: aload         5
+      72: invokevirtual #344                // Method java/lang/Exception.getMessage:()Ljava/lang/String;
+      75: invokedynamic #347,  0            // InvokeDynamic #7:makeConcatWithConstants:(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+      80: sipush        128
+      83: sipush        128
+      86: invokevirtual #350                // Method java/awt/Graphics2D.drawString:(Ljava/lang/String;II)V
+      89: new           #308                // class com/hiveworkshop/rms/ui/util/ZoomableImagePreviewPanel
+      92: dup
+      93: aload         6
+      95: iconst_1
+      96: invokespecial #310                // Method com/hiveworkshop/rms/ui/util/ZoomableImagePreviewPanel."<init>":(Ljava/awt/Image;Z)V
+      99: astore        4
+     101: aload         4
+     103: areturn
+    Exception table:
+       from    to  target type
+           5    24    27   Class java/lang/Exception
+
+  private javax.swing.JPanel getLeftHandPanel();
+    Code:
+       0: new           #70                 // class javax/swing/JPanel
+       3: dup
+       4: new           #15                 // class net/miginfocom/swing/MigLayout
+       7: dup
+       8: invokespecial #354                // Method net/miginfocom/swing/MigLayout."<init>":()V
+      11: invokespecial #77                 // Method javax/swing/JPanel."<init>":(Ljava/awt/LayoutManager;)V
+      14: astore_1
+      15: aload_1
+      16: aload_0
+      17: invokevirtual #356                // Method getTopSettingsPanel:()Ljavax/swing/JPanel;
+      20: ldc_w         #359                // String wrap, growx
+      23: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+      26: aload_0
+      27: new           #129                // class com/hiveworkshop/rms/ui/application/model/editors/TextureValuePanel
+      30: dup
+      31: aload_0
+      32: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+      35: ldc_w         #361                // String 贴图
+      38: invokespecial #363                // Method com/hiveworkshop/rms/ui/application/model/editors/TextureValuePanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Ljava/lang/String;)V
+      41: putfield      #98                 // Field texturePanel:Lcom/hiveworkshop/rms/ui/application/model/editors/TextureValuePanel;
+      44: aload_0
+      45: new           #153                // class com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel
+      48: dup
+      49: aload_0
+      50: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+      53: ldc           #147                // String 透明度
+      55: invokespecial #366                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Ljava/lang/String;)V
+      58: putfield      #134                // Field alphaPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+      61: aload_0
+      62: new           #153                // class com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel
+      65: dup
+      66: aload_0
+      67: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+      70: ldc_w         #367                // String 自发光增益
+      73: invokespecial #366                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Ljava/lang/String;)V
+      76: putfield      #189                // Field emissiveGainPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+      79: aload_0
+      80: new           #187                // class com/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel
+      83: dup
+      84: aload_0
+      85: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+      88: ldc_w         #369                // String 菲涅尔颜色
+      91: invokespecial #371                // Method com/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Ljava/lang/String;)V
+      94: putfield      #173                // Field fresnelColorPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel;
+      97: aload_0
+      98: new           #153                // class com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel
+     101: dup
+     102: aload_0
+     103: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+     106: ldc_w         #372                // String 菲涅尔不透明度
+     109: invokespecial #366                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Ljava/lang/String;)V
+     112: putfield      #164                // Field fresnelOpacityPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     115: aload_0
+     116: new           #153                // class com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel
+     119: dup
+     120: aload_0
+     121: getfield      #198                // Field modelHandler:Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;
+     124: ldc_w         #374                // String 菲涅尔队伍颜色
+     127: invokespecial #366                // Method com/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel."<init>":(Lcom/hiveworkshop/rms/ui/gui/modeledit/ModelHandler;Ljava/lang/String;)V
+     130: putfield      #155                // Field fresnelTeamColor:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     133: aload_1
+     134: aload_0
+     135: getfield      #98                 // Field texturePanel:Lcom/hiveworkshop/rms/ui/application/model/editors/TextureValuePanel;
+     138: ldc_w         #359                // String wrap, growx
+     141: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     144: aload_1
+     145: aload_0
+     146: getfield      #134                // Field alphaPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     149: aload_0
+     150: getfield      #9                  // Field valuePanelConstraints:Ljava/lang/String;
+     153: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     156: aload_1
+     157: aload_0
+     158: getfield      #189                // Field emissiveGainPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     161: aload_0
+     162: getfield      #9                  // Field valuePanelConstraints:Ljava/lang/String;
+     165: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     168: aload_1
+     169: aload_0
+     170: getfield      #173                // Field fresnelColorPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/ColorValuePanel;
+     173: aload_0
+     174: getfield      #9                  // Field valuePanelConstraints:Ljava/lang/String;
+     177: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     180: aload_1
+     181: aload_0
+     182: getfield      #164                // Field fresnelOpacityPanel:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     185: aload_0
+     186: getfield      #9                  // Field valuePanelConstraints:Ljava/lang/String;
+     189: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     192: aload_1
+     193: aload_0
+     194: getfield      #155                // Field fresnelTeamColor:Lcom/hiveworkshop/rms/ui/application/model/editors/FloatValuePanel;
+     197: aload_0
+     198: getfield      #9                  // Field valuePanelConstraints:Ljava/lang/String;
+     201: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     204: aload_1
+     205: areturn
+
+  private javax.swing.JPanel getTopSettingsPanel();
+    Code:
+       0: new           #70                 // class javax/swing/JPanel
+       3: dup
+       4: new           #15                 // class net/miginfocom/swing/MigLayout
+       7: dup
+       8: ldc_w         #376                // String ins 0
+      11: invokespecial #74                 // Method net/miginfocom/swing/MigLayout."<init>":(Ljava/lang/String;)V
+      14: invokespecial #77                 // Method javax/swing/JPanel."<init>":(Ljava/awt/LayoutManager;)V
+      17: astore_1
+      18: aload_1
+      19: new           #378                // class javax/swing/JLabel
+      22: dup
+      23: ldc_w         #380                // String 过滤模式：
+      26: invokespecial #382                // Method javax/swing/JLabel."<init>":(Ljava/lang/String;)V
+      29: invokevirtual #383                // Method javax/swing/JPanel.add:(Ljava/awt/Component;)Ljava/awt/Component;
+      32: pop
+      33: aload_0
+      34: new           #243                // class com/hiveworkshop/rms/util/TwiComboBox
+      37: dup
+      38: invokestatic  #386                // Method com/hiveworkshop/rms/editor/model/util/FilterMode.values:()[Lcom/hiveworkshop/rms/editor/model/util/FilterMode;
+      41: getstatic     #392                // Field com/hiveworkshop/rms/editor/model/util/FilterMode.透明:Lcom/hiveworkshop/rms/editor/model/util/FilterMode;
+      44: invokespecial #396                // Method com/hiveworkshop/rms/util/TwiComboBox."<init>":([Ljava/lang/Object;Ljava/lang/Object;)V
+      47: putfield      #234                // Field filterModeDropdown:Lcom/hiveworkshop/rms/util/TwiComboBox;
+      50: aload_0
+      51: getfield      #234                // Field filterModeDropdown:Lcom/hiveworkshop/rms/util/TwiComboBox;
+      54: aload_0
+      55: invokedynamic #399,  0            // InvokeDynamic #8:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+      60: invokevirtual #400                // Method com/hiveworkshop/rms/util/TwiComboBox.addOnSelectItemListener:(Ljava/util/function/Consumer;)Lcom/hiveworkshop/rms/util/TwiComboBox;
+      63: pop
+      64: aload_1
+      65: aload_0
+      66: getfield      #234                // Field filterModeDropdown:Lcom/hiveworkshop/rms/util/TwiComboBox;
+      69: ldc_w         #359                // String wrap, growx
+      72: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+      75: aload_1
+      76: new           #378                // class javax/swing/JLabel
+      79: dup
+      80: ldc_w         #404                // String 纹理顶点动画：
+      83: invokespecial #382                // Method javax/swing/JLabel."<init>":(Ljava/lang/String;)V
+      86: invokevirtual #383                // Method javax/swing/JPanel.add:(Ljava/awt/Component;)Ljava/awt/Component;
+      89: pop
+      90: aload_0
+      91: new           #264                // class javax/swing/JButton
+      94: dup
+      95: ldc_w         #406                // String 选择纹理顶点动画
+      98: invokespecial #408                // Method javax/swing/JButton."<init>":(Ljava/lang/String;)V
+     101: putfield      #248                // Field tVertexAnimButton:Ljavax/swing/JButton;
+     104: aload_1
+     105: aload_0
+     106: getfield      #248                // Field tVertexAnimButton:Ljavax/swing/JButton;
+     109: ldc_w         #359                // String wrap, growx
+     112: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     115: aload_1
+     116: new           #378                // class javax/swing/JLabel
+     119: dup
+     120: ldc_w         #409                // String 坐标 ID：
+     123: invokespecial #382                // Method javax/swing/JLabel."<init>":(Ljava/lang/String;)V
+     126: invokevirtual #383                // Method javax/swing/JPanel.add:(Ljava/awt/Component;)Ljava/awt/Component;
+     129: pop
+     130: aload_0
+     131: new           #276                // class com/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner
+     134: dup
+     135: iconst_m1
+     136: ldc_w         #411                // int -2147483648
+     139: aload_0
+     140: invokedynamic #412,  0            // InvokeDynamic #9:accept:(Lcom/hiveworkshop/rms/ui/application/model/material/ComponentHDLayer;)Ljava/util/function/Consumer;
+     145: invokespecial #413                // Method com/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner."<init>":(IILjava/util/function/Consumer;)V
+     148: putfield      #268                // Field coordIdSpinner:Lcom/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner;
+     151: aload_1
+     152: aload_0
+     153: getfield      #268                // Field coordIdSpinner:Lcom/hiveworkshop/rms/ui/application/model/editors/IntEditorJSpinner;
+     156: ldc_w         #359                // String wrap, growx
+     159: invokevirtual #233                // Method javax/swing/JPanel.add:(Ljava/awt/Component;Ljava/lang/Object;)V
+     162: aload_1
+     163: areturn
+
+  private void changeFilterMode(com.hiveworkshop.rms.editor.model.util.FilterMode);
+    Code:
+       0: aload_1
+       1: ifnull        47
+       4: aload_1
+       5: aload_0
+       6: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       9: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      12: invokevirtual #238                // Method com/hiveworkshop/rms/editor/model/Layer.getFilterMode:()Lcom/hiveworkshop/rms/editor/model/util/FilterMode;
+      15: if_acmpeq     47
+      18: aload_0
+      19: getfield      #416                // Field undoManager:Lcom/hiveworkshop/rms/ui/application/edit/mesh/activity/UndoManager;
+      22: new           #420                // class com/hiveworkshop/rms/editor/actions/model/material/SetLayerFilterModeAction
+      25: dup
+      26: aload_0
+      27: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      30: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      33: aload_1
+      34: aload_0
+      35: getfield      #422                // Field changeListener:Lcom/hiveworkshop/rms/ui/application/edit/ModelStructureChangeListener;
+      38: invokespecial #426                // Method com/hiveworkshop/rms/editor/actions/model/material/SetLayerFilterModeAction."<init>":(Lcom/hiveworkshop/rms/editor/model/Layer;Lcom/hiveworkshop/rms/editor/model/util/FilterMode;Lcom/hiveworkshop/rms/ui/application/edit/ModelStructureChangeListener;)V
+      41: invokevirtual #429                // Method com/hiveworkshop/rms/editor/actions/model/material/SetLayerFilterModeAction.redo:()Lcom/hiveworkshop/rms/editor/actions/UndoAction;
+      44: invokevirtual #433                // Method com/hiveworkshop/rms/ui/application/edit/mesh/activity/UndoManager.pushAction:(Lcom/hiveworkshop/rms/editor/actions/UndoAction;)V
+      47: return
+
+  private void setCoordId(int);
+    Code:
+       0: aload_0
+       1: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       4: ifnull        18
+       7: aload_0
+       8: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      11: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      14: iload_1
+      15: invokevirtual #439                // Method com/hiveworkshop/rms/editor/model/Layer.setCoordId:(I)V
+      18: return
+
+  private void setTextureId(int);
+    Code:
+       0: aload_0
+       1: getfield      #288                // Field model:Lcom/hiveworkshop/rms/editor/model/EditableModel;
+       4: iload_1
+       5: invokevirtual #443                // Method com/hiveworkshop/rms/editor/model/EditableModel.getTexture:(I)Lcom/hiveworkshop/rms/editor/model/Bitmap;
+       8: astore_2
+       9: aload_2
+      10: ifnull        56
+      13: aload_0
+      14: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      17: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      20: invokevirtual #280                // Method com/hiveworkshop/rms/editor/model/Layer.getTextureBitmap:()Lcom/hiveworkshop/rms/editor/model/Bitmap;
+      23: aload_2
+      24: if_acmpeq     56
+      27: aload_0
+      28: getfield      #416                // Field undoManager:Lcom/hiveworkshop/rms/ui/application/edit/mesh/activity/UndoManager;
+      31: new           #447                // class com/hiveworkshop/rms/editor/actions/model/material/SetLayerTextureAction
+      34: dup
+      35: aload_2
+      36: aload_0
+      37: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      40: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      43: aload_0
+      44: getfield      #422                // Field changeListener:Lcom/hiveworkshop/rms/ui/application/edit/ModelStructureChangeListener;
+      47: invokespecial #449                // Method com/hiveworkshop/rms/editor/actions/model/material/SetLayerTextureAction."<init>":(Lcom/hiveworkshop/rms/editor/model/Bitmap;Lcom/hiveworkshop/rms/editor/model/Layer;Lcom/hiveworkshop/rms/ui/application/edit/ModelStructureChangeListener;)V
+      50: invokevirtual #452                // Method com/hiveworkshop/rms/editor/actions/model/material/SetLayerTextureAction.redo:()Lcom/hiveworkshop/rms/editor/actions/UndoAction;
+      53: invokevirtual #433                // Method com/hiveworkshop/rms/ui/application/edit/mesh/activity/UndoManager.pushAction:(Lcom/hiveworkshop/rms/editor/actions/UndoAction;)V
+      56: return
+
+  private void setStaticAlpha(double);
+    Code:
+       0: aload_0
+       1: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       4: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+       7: invokevirtual #138                // Method com/hiveworkshop/rms/editor/model/Layer.getStaticAlpha:()D
+      10: dload_1
+      11: dcmpl
+      12: ifeq          44
+      15: aload_0
+      16: getfield      #416                // Field undoManager:Lcom/hiveworkshop/rms/ui/application/edit/mesh/activity/UndoManager;
+      19: new           #453                // class com/hiveworkshop/rms/editor/actions/model/material/SetLayerAlphaAction
+      22: dup
+      23: aload_0
+      24: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      27: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      30: dload_1
+      31: aload_0
+      32: getfield      #422                // Field changeListener:Lcom/hiveworkshop/rms/ui/application/edit/ModelStructureChangeListener;
+      35: invokespecial #455                // Method com/hiveworkshop/rms/editor/actions/model/material/SetLayerAlphaAction."<init>":(Lcom/hiveworkshop/rms/editor/model/Layer;DLcom/hiveworkshop/rms/ui/application/edit/ModelStructureChangeListener;)V
+      38: invokevirtual #458                // Method com/hiveworkshop/rms/editor/actions/model/material/SetLayerAlphaAction.redo:()Lcom/hiveworkshop/rms/editor/actions/UndoAction;
+      41: invokevirtual #433                // Method com/hiveworkshop/rms/ui/application/edit/mesh/activity/UndoManager.pushAction:(Lcom/hiveworkshop/rms/editor/actions/UndoAction;)V
+      44: return
+
+  private void setFresnelTeamColor(double);
+    Code:
+       0: aload_0
+       1: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       4: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+       7: invokevirtual #158                // Method com/hiveworkshop/rms/editor/model/Layer.getFresnelTeamColor:()D
+      10: dload_1
+      11: dcmpl
+      12: ifeq          26
+      15: aload_0
+      16: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      19: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      22: dload_1
+      23: invokevirtual #459                // Method com/hiveworkshop/rms/editor/model/Layer.setFresnelTeamColor:(D)V
+      26: return
+
+  private void setFresnelOpacity(double);
+    Code:
+       0: aload_0
+       1: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       4: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+       7: invokevirtual #167                // Method com/hiveworkshop/rms/editor/model/Layer.getFresnelOpacity:()D
+      10: dload_1
+      11: dcmpl
+      12: ifeq          26
+      15: aload_0
+      16: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      19: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      22: dload_1
+      23: invokevirtual #463                // Method com/hiveworkshop/rms/editor/model/Layer.setFresnelOpacity:(D)V
+      26: return
+
+  private void setFresnelColor(com.hiveworkshop.rms.util.Vec3);
+    Code:
+       0: aload_0
+       1: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       4: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+       7: invokevirtual #177                // Method com/hiveworkshop/rms/editor/model/Layer.getFresnelColor:()Lcom/hiveworkshop/rms/util/Vec3;
+      10: aload_1
+      11: invokevirtual #466                // Method com/hiveworkshop/rms/util/Vec3.equalLocs:(Lcom/hiveworkshop/rms/util/Vec3;)Z
+      14: ifne          28
+      17: aload_0
+      18: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      21: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      24: aload_1
+      25: invokevirtual #472                // Method com/hiveworkshop/rms/editor/model/Layer.setFresnelColor:(Lcom/hiveworkshop/rms/util/Vec3;)V
+      28: return
+
+  private void setEmissive(double);
+    Code:
+       0: aload_0
+       1: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+       4: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+       7: invokevirtual #192                // Method com/hiveworkshop/rms/editor/model/Layer.getEmissive:()D
+      10: dload_1
+      11: dcmpl
+      12: ifeq          26
+      15: aload_0
+      16: getfield      #94                 // Field selectedItem:Ljava/lang/Object;
+      19: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+      22: dload_1
+      23: invokevirtual #476                // Method com/hiveworkshop/rms/editor/model/Layer.setEmissive:(D)V
+      26: return
+
+  public com.hiveworkshop.rms.ui.application.model.ComponentPanel setSelectedItem(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #103                // class com/hiveworkshop/rms/editor/model/Layer
+       5: invokevirtual #479                // Method setSelectedItem:(Lcom/hiveworkshop/rms/editor/model/Layer;)Lcom/hiveworkshop/rms/ui/application/model/ComponentPanel;
+       8: areturn
+}

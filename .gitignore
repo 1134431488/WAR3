@@ -1,0 +1,24 @@
+# ---- 日志 / 临时 / 备份 ----
+*.log
+*.tmp
+*.new
+*.orig
+备份/
+
+# ---- Python ----
+__pycache__/
+*.pyc
+
+# ---- 编译产物 ----
+classes/
+*.class
+build/
+
+# ---- 系统 ----
+.DS_Store
+Thumbs.db
+
+# ---- IDE ----
+.idea/
+*.iml
+*.iml

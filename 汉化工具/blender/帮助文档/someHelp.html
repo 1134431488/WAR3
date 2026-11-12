@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>帮助 / 快捷键说明</title>
+<style>
+body{font-family:"Microsoft YaHei",SimSun,sans-serif;font-size:14px;line-height:1.7;margin:18px;color:#222;}
+h2{font-size:18px;border-left:5px solid #4772b3;padding-left:8px;margin:22px 0 10px;}
+h3{font-size:15px;margin:16px 0 6px;}
+table{border-collapse:collapse;width:100%;margin:6px 0 14px;}
+th,td{border:1px solid #bbb;padding:5px 8px;text-align:left;vertical-align:top;}
+th{background:#eceff3;}
+kbd{display:inline-block;min-width:18px;padding:1px 6px;border:1px solid #888;border-bottom-width:2px;
+    background:#f7f7f7;border-radius:0;font-family:Consolas,monospace;font-size:13px;}
+.warn{background:#fff4e5;border-left:4px solid #e08a1e;padding:8px 10px;margin:10px 0;}
+</style>
+</head>
+<body>
+
+<h1>Retera Model Studio 汉化版 · 帮助</h1>
+<p>本页只介绍软件当前真实存在的功能。快捷键以 Blender 习惯为参考。</p>
+
+<h2>一、视图操作</h2>
+<table>
+<tr><th>操作</th><th>快捷键 / 鼠标</th><th>说明</th></tr>
+<tr><td>旋转视角</td><td><kbd>Alt</kbd> + 左键拖动</td><td>围绕当前选择（没有选择时围绕模型中心）旋转</td></tr>
+<tr><td>平移视角</td><td><kbd>Alt</kbd> + 右键拖动</td><td>上下左右平移相机</td></tr>
+<tr><td>缩放视角</td><td>鼠标滚轮</td><td>滚轮向前拉近，向后拉远</td></tr>
+<tr><td>聚焦所选</td><td><kbd>.</kbd>（主键盘或小键盘）</td><td>把视角居中到所选节点或整个模型</td></tr>
+<tr><td>正交 / 透视</td><td><kbd>小键盘 5</kbd></td><td>在正交视图和透视视图之间切换</td></tr>
+</table>
+
+<h2>二、变换：G / R / S</h2>
+<table>
+<tr><th>操作</th><th>快捷键</th><th>说明</th></tr>
+<tr><td>移动</td><td><kbd>G</kbd></td><td>进入移动状态，鼠标移动即跟随变换</td></tr>
+<tr><td>旋转</td><td><kbd>R</kbd></td><td>进入旋转状态</td></tr>
+<tr><td>缩放</td><td><kbd>S</kbd></td><td>进入缩放状态</td></tr>
+<tr><td>锁定单轴</td><td>变换中按 <kbd>X</kbd> / <kbd>Y</kbd> / <kbd>Z</kbd></td><td>只沿该世界坐标轴变换，鼠标拖拽只影响该轴</td></tr>
+<tr><td>排除单轴</td><td><kbd>Shift</kbd> + <kbd>X</kbd>/<kbd>Y</kbd>/<kbd>Z</kbd></td><td>在另外两个轴上变换</td></tr>
+<tr><td>取消轴约束</td><td>再按一次同一轴键</td><td>回到自由变换</td></tr>
+<tr><td>数字精确输入</td><td>变换中直接输入数字，<kbd>回车</kbd> 确认</td><td>移动为距离，旋转为角度（度），缩放为倍数（1 = 100%）</td></tr>
+<tr><td>确认变换</td><td>左键点击</td><td>提交并写入撤销记录</td></tr>
+<tr><td>取消变换</td><td>右键 / <kbd>Esc</kbd></td><td>还原到变换前</td></tr>
+</table>
+<p class="warn">注意：当前 XYZ 轴锁定使用<b>世界坐标轴</b>。局部坐标（随骨骼旋转的轴）切换尚未实现，界面上也不会假装支持。</p>
+
+<h2>三、编辑模式选择</h2>
+<table>
+<tr><th>操作</th><th>快捷键</th><th>说明</th></tr>
+<tr><td>顶点 / 面 / 组 / 动画模式</td><td>工具栏按钮（按钮上带有快捷键）</td><td>决定当前选择的是什么类型的元素</td></tr>
+<tr><td>拓扑关联选择</td><td><kbd>L</kbd>（顶点模式）</td><td>鼠标指向某个顶点按 L，选中与它通过三角面顶点相连的整块连通区域</td></tr>
+<tr><td>叠加连通块</td><td><kbd>Shift</kbd> + <kbd>L</kbd></td><td>保留已有选择，再并入新的连通块</td></tr>
+<tr><td>挤出</td><td><kbd>E</kbd></td><td>复制所选面/顶点并拉出新几何（对应“挤出”模式）</td></tr>
+<tr><td>分离</td><td><kbd>P</kbd></td><td>分离模式，把所选部分沿法线方向独立拉出</td></tr>
+</table>
+
+<h2>四、添加粒子（含丝带）</h2>
+<ol>
+<li>菜单 <b>添加 → 粒子</b>，选择内置粒子模板，或选择 <b>空丝带粒子（Ribbon）</b> 直接新建一条丝带。</li>
+<li>对话框里的 <b>父级</b> 下拉框可以直接输入文字过滤，例如输入 <code>weapon</code>、<code>hand</code> 快速定位骨骼，不必在几百个骨骼里滚动。</li>
+<li>坐标三个输入框的含义：
+  <table>
+  <tr><th>输入框</th><th>含义</th><th>坐标轴</th></tr>
+  <tr><td>X</td><td>前后方向</td><td>红色轴</td></tr>
+  <tr><td>Y</td><td>左右方向</td><td>绿色轴</td></tr>
+  <tr><td>Z</td><td>上下方向</td><td>蓝色轴</td></tr>
+  </table>
+  修改时对话框底部会实时显示当前坐标值。</li>
+<li>丝带与爆米花粒子的区别：丝带（RibbonEmitter）是连续条带，适合刀光、拖尾；爆米花（ParticleEmitter2）是独立小面片，适合火花、烟尘。</li>
+</ol>
+
+<h2>五、时间轴</h2>
+<table>
+<tr><th>操作</th><th>说明</th></tr>
+<tr><td>拖动蓝色滑块</td><td>改变当前时间；滑块两侧的小箭头可逐帧微调</td></tr>
+<tr><td>拖动关键帧方块</td><td>改变关键帧时间，松开后写入撤销记录</td></tr>
+<tr><td>右键关键帧</td><td>弹出关键帧菜单（复制、粘贴、删除等）</td></tr>
+<tr><td>播放 / 暂停按钮</td><td>实时播放当前动画</td></tr>
+<tr><td>创建关键帧按钮</td><td>在当前时间为所选节点写入关键帧</td></tr>
+<tr><td>All KF</td><td>勾选后显示所有节点的关键帧，取消只显示所选节点</td></tr>
+</table>
+
+<h2>六、界面说明</h2>
+<ul>
+<li>按钮统一为 Blender 风格直角矩形，工具栏按钮直接写中文和快捷键，例如“移动 G”“旋转 R”。</li>
+<li>鼠标悬停在控件上会显示中文气泡说明。</li>
+<li>左侧“大纲视图”与视口联动：在视口点选骨骼，节点树会自动展开并高亮对应节点。</li>
+</ul>
+
+<p style="margin-top:26px;color:#666;">如果发现文档与软件不一致，以软件实际行为为准。</p>
+</body>
+</html>
