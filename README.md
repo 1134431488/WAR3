@@ -10,9 +10,10 @@
 
 - 全中文界面与大量**悬停气泡说明**（约 300 条）；粒子参数统一改成一眼能懂的大白话，并修正生命周期/透明度/可见性/子贴图等错误说明
 - 粒子参数名支持在 `提示说明.txt` 里用 `!标签!原名=新名` 自定义改写，改文本重启即可，无需重编程序
-- **Blender 式快捷键**：`G` 移动、`R` 旋转、`S` 缩放、`E` 挤出、`P` 分离面（抓取式交互，可 X/Y/Z 锁轴，左键确认 / ESC 取消）
+- **Blender 式快捷键**：`G` 移动、`R` 旋转、`S` 缩放、`E` 挤出、`P` 分离面（抓取式交互；G/R/S 支持 X/Y/Z 锁轴与数字输入，E/P 挤出/分离面暂不支持，左键确认 / ESC 取消）
 - 面模式**防透选**修复（线框模式仍保留透视多选，符合 Blender 习惯）
 - 工具栏标签修正：`EXTRUDE` →「分离面」、`EXTEND` →「挤出」（与真实语义一致）
+- **上游缺陷清理**：修复粒子渲染层与建模系统 24 个文件约 40 处低风险 BUG（详见下方已勾选条目）
 - 界面整体放大（高 DPI 适配）
 
 ## 许可证
@@ -58,10 +59,11 @@ cd source
 - [x] **挤出后新面和点无法操作（已修复）**：上游 `ExtrudeAction` / `ExtendAction` 只把新几何加进 `Geoset`，未通知 `ModelView` 刷新 `editableVertices` 缓存，导致拾取时被 `isEditable()` 过滤掉。现已补结构同步并自动选中新顶点。
 - [x] **粒子参数名生硬、说明有错（已修复）**：原说明把生命周期写成「约 0.1 秒」、透明度写成「255 为不透明」、可见性写成「大于 0 显示」（实际阈值 0.75）、子贴图写成「随机取一格」（实际按生命进度顺序播放）；气泡注入器还会用泛词模糊匹配把错误说明套到不相干的按钮上。现已全部改为大白话、补全丝带专属参数说明、修正单位，并改成最长精确匹配。
 - [x] **爆米花粒子参数不可见等三个面板 BUG（已修复）**：`ComponentPopcornPanel` 的 6 个参数控件创建了却没 add 到界面；第一代面板「可见性」错绑到 `EMISSION_RATE` 会污染数据；第二代面板切换节点时刷新下拉框会往撤销栈压入假动作、`editParticle` 按钮残留英文。均已修复。
-- [ ] **粒子渲染层仍有上游缺陷**：`RenderModel` 只把 `ParticleEmitter2` 送入渲染管线，第一代 / 爆米花 / 丝带三类发射器在视口不渲染；`RenderParticleEmitter2` 有 `glBegin` 后提前 return 漏 `glEnd`、rows/columns 为 0 时除零、`ALPHAKEY` 未启用 alpha test、Squirt 只支持 DontInterp 插值。这些改动面大，尚未处理。
+- [x] **粒子渲染层若干崩溃 / 显示错乱缺陷（已修复）**：`RenderParticleEmitter2` 的 `glBegin` 后提前 return 漏 `glEnd`（会留下未闭合 GL 状态导致视口错乱）、rows/columns 为 0 时除零、缓冲数据为 null 时的崩溃；`RenderParticle2` 的子贴图行列数保护与插值分母 clamp；`RenderModel` 的渲染器映射表不清理（粒子删除后仍残留幽灵渲染器）。第一代 / 爆米花 / 丝带发射器仍未进渲染管线（上游整类为注释状态），属大工程，欢迎帮忙实现。
 - [ ] **粒子关键帧标量类型缺陷**：`AnimFlag` 把 Visibility / EmissionRate / Speed / Gravity 等所有标量关键帧都当成 ALPHA（typeid 0），导致只在一个动画打过关键帧时，其它动画里该参数会变成 1.0 而不是模型静态值。属全局动画体系重构，尚未处理。
-- [ ] **添加粒子不可撤销 / 预设缺失时静默失败**：`AddParticlePanel` 的三个添加入口直接 `model.add`，未压入 `UndoAction`；预设贴图缺失时 `ImageIO.read(null)` 抛 `IllegalArgumentException`（非 IOException）不被捕获，可能让「添加 → 粒子」子菜单构建中断或点了没反应。
-- [ ] **粒子面板静态可见性仍不可编辑**：多个面板的 `visibilityPanel` setter 为 null，爆米花模型的 `setStaticVis` 是空实现；关键帧轨道可编辑，但静态值改不了。
+- [x] **添加粒子预设缺失时静默失败（已修复）**：`AddParticlePanel` 的 `loadImage` 改为 try-with-resources + 异常兜底（原 `ImageIO.read(null)` 抛 `IllegalArgumentException` 不被捕获，会让「添加 → 粒子」子菜单构建中断或点了没反应），缺失时自动补占位图标；空预设列表与父级组件异常也做了防护。三个添加入口的 UndoAction（撤销支持）仍未实现。
+- [x] **爆米花粒子静态可见性空实现（已修复）**：`ParticleEmitterPopcorn.setStaticVis` 原为空方法，现已写入 alpha；爆米花拷贝构造补齐 `always` 与动画可见性映射。各粒子面板 `visibilityPanel` 的 setter 仍为 null，静态值界面编辑尚未接通。
+- [x] **建模系统 24 个文件约 40 处低风险缺陷（已修复）**：含 `AnimFlag.equals` 逻辑条件错误（`||` 应为 `&&`）、`MoveAction` 撤销方向写反（`set` 误当 `sub` 用）、`CopyCutPast` 动画模式快捷键分派丢失、挤出/分离面后 `fillGap` 重复执行、`MergeGeosets` 重复移除顶点、`SplitGeoset` 重复调用、`CreateFace` 零向量除零、空选择集焊点 / 选择中心返回 NaN、立方体绘制高度判据用错变量、手动变换面板缺 default 分支、视口右键菜单骨骼命名实为替换而非追加、爆米花粒子 `forEach`+`remove` 并发修改异常、`RibbonEmitter` 材质引用越界、rows/columns 默认 0 等，均已修复并编译注入。另清理约 30 处调试 `println` 与 1 个误导性循环变量命名（lambda 变量遮蔽外层 `geoset`）。
 - [ ] **缺少魔兽 3 游戏素材时的资源告警**：未配置游戏目录时，启动阶段会在控制台刷 `JMpqException: File Not Found <...>`（主要是 `stock\particles\*.png` 粒子贴图，以及少量 TabIcons 图标）。异常被捕获，不影响运行；正式启动脚本使用 `javaw.exe`（无控制台），不显示也不写日志文件，仅调试模式可见。
 - [ ] **面模式选择**：单击可能仍会多选被遮挡的面（已加按质心距离去重，但共面 / 斜对角情况未全覆盖）。
 - [ ] **E / P 抓取交互**：挤出与分离面沿用原版 Manipulator，暂不支持 X/Y/Z 锁轴与数字精确输入（如需锁轴请先确认，再按 G 移动）；部分视角下拖动行为仍可能不符合预期。

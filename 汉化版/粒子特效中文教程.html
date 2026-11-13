@@ -140,7 +140,7 @@
 <tr><td>透明度</td><td><code>Alpha / SegmentAlpha</code></td><td>不透明度分段，0 全透明。淡入淡出靠它。</td></tr>
 <tr><td>粒子缩放</td><td><code>SegmentScaling</code></td><td>大小随时间变化：先胀大再消散，或持续缩小。</td></tr>
 <tr><td>开始 / 结束 / 重复 / 衰减</td><td><code>start / end / repeat / Decay</code></td><td>分段的起止点、是否循环、以及尾段变淡变小的程度。</td></tr>
-<tr><td>混合时间</td><td><code>Blend Time</code></td><td>分段之间的过渡时间，避免颜色突变。</td></tr>
+<tr><td>混合时间</td><td><code>Blend Time</code></td><td>颜色/透明分段的中点位置（占生命进度的百分比），不是过渡时长。</td></tr>
 </table>
 
 <h3>4.3 渲染标志（完整面板里的 Flags 区）</h3>
@@ -168,7 +168,7 @@
 </ol>
 <table>
 <tr><th style="width:26%">轨道</th><th>典型用法</th></tr>
-<tr><td>可见性 <code>Visibility</code></td><td>让特效只在「攻击」「施法」这类动画里出现。数值 0 = 隐藏，大于 0 = 显示。这是特效与动画配合的核心。</td></tr>
+<tr><td>可见性 <code>Visibility</code></td><td>让特效只在「攻击」「施法」这类动画里出现。数值 0 = 隐藏，1 = 显示；编辑器视口的显示阈值是 0.75，设 0.5 仍可能看起来是隐藏的。这是特效与动画配合的核心。</td></tr>
 <tr><td>发射速率</td><td>爆发瞬间拉高、随后归零，做出「喷一下就停」的效果。</td></tr>
 <tr><td>颜色 / 透明度</td><td>火焰由亮黄转暗红再淡出；烟雾越飘越淡。</td></tr>
 <tr><td>缩放</td><td>生成时小 → 中期变大 → 消散时缩回，或直接持续放大做膨胀烟团。</td></tr>
