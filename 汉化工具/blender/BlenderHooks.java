@@ -117,7 +117,8 @@ public final class BlenderHooks {
         SwingUtilities.invokeLater(() -> {
             scan();
             new Timer(500, ev -> scan()).start();
-            System.out.println("[Blender] 视口/节点树联动、G/R/S 轴向约束已启动。");
+            System.out.println("[Blender] 视口/节点树联动、G/R/S/E/P 变换已启动"
+                    + "（G移动 R旋转 S缩放 E挤出 P分离面）。");
         });
     }
 
@@ -381,11 +382,18 @@ public final class BlenderHooks {
         try {
             Object prefs = field(vp, "programPreferences");
             if (prefs == null) return;
-            setField(prefs, "threeDCameraSpinMouseEx", ALT | BUTTON1);
-            setField(prefs, "threeDCameraPanMouseEx", ALT | BUTTON3);
-            setField(prefs, "cameraToggleOrtho", KeyEvent.VK_NUMPAD5);
+            setRuntimePref(prefs, "threeDCameraSpinMouseEx", ALT | BUTTON1);
+            setRuntimePref(prefs, "threeDCameraPanMouseEx", ALT | BUTTON3);
+            setRuntimePref(prefs, "cameraToggleOrtho", KeyEvent.VK_NUMPAD5);
         } catch (Throwable ignored) {
         }
+    }
+
+    /** scan() 每 500ms 调用一次；只在值不同时写入，避免覆盖用户后续自定义的偏好。 */
+    private static void setRuntimePref(Object prefs, String name, Object value) throws Exception {
+        Object cur = field(prefs, name);
+        if (cur == null ? value == null : cur.equals(value)) return;
+        setField(prefs, name, value);
     }
 
     // ------------------------------------------------------------------ 页签点击修复
@@ -1230,7 +1238,7 @@ public final class BlenderHooks {
 
             double[] b = selectionBounds(vp);
             if (b == null) {
-                hint(vp, "先选中点 / 面 / 骨骼，再按 G / R / S");
+                hint(vp, "先选中点 / 面 / 骨骼，再按 G / R / S / E / P");
                 return false;
             }
 
@@ -1266,9 +1274,13 @@ public final class BlenderHooks {
             com.hiveworkshop.rms.util.Vec2 p = camera.getPoint_ifYZplane(mp.x, mp.y);
             Manipulator m;
             if (tool == 3) {
-                m = new ExtrudeManipulator(modelEditor, dim);
+                m = new ExtrudeManipulator(modelEditor, dim);   // EXTRUDE = 分离面
+            } else if (tool == 4) {
+                m = new ExtendManipulator(modelEditor, dim);    // EXTEND = 真挤出
             } else {
-                m = new ExtendManipulator(modelEditor, dim);
+                // 旧实现把所有 tool>=3 都当成 EXTEND，未知编号会误做挤出。
+                hint(vp, "未知的建模工具编号：" + tool);
+                return false;
             }
             m.start(me, p, camera);
             NUMERIC.setLength(0);
@@ -1285,8 +1297,15 @@ public final class BlenderHooks {
     }
 
     private static String describe(int tool, int axisMask) {
-        String t = tool == 0 ? "移动" : (tool == 1 ? "旋转"
-                : (tool == 2 ? "缩放" : (tool == 3 ? "分离面" : "挤出")));
+        String t;
+        switch (tool) {
+            case 0: t = "移动"; break;
+            case 1: t = "旋转"; break;
+            case 2: t = "缩放"; break;
+            case 3: t = "分离面"; break;
+            case 4: t = "挤出"; break;
+            default: t = "工具" + tool; break;
+        }
         String d;
         switch (axisMask) {
             case 1: d = "沿 X 轴"; break;
@@ -1560,13 +1579,24 @@ public final class BlenderHooks {
         @Override
         public void applyNumeric(double value) {
             try {
-                int sa = singleAxis();
                 if (tool == 0) {
-                    Vec3 axis = sa == 0 ? new Vec3(1, 0, 0)
-                            : sa == 1 ? new Vec3(0, 1, 0)
-                            : sa == 2 ? new Vec3(0, 0, 1)
-                            : new Vec3(1, 0, 0);
-                    Vec3 target = Vec3.getScaled(axis, (float) value);
+                    // 数字移动必须遵守 axisMask。旧实现用 singleAxis()，
+                    // 在「排除轴」模式（Shift+X -> mask 6）下返回 -1，退化成
+                    // 只沿 X 移动，直接违反用户设定的约束。
+                    Vec3 target;
+                    if (axisMask == 7) {
+                        target = Vec3.getScaled(new Vec3(1, 0, 0), (float) value);
+                    } else if (axisMask == 1 || axisMask == 2 || axisMask == 4) {
+                        Vec3 axis = axisMask == 1 ? new Vec3(1, 0, 0)
+                                : axisMask == 2 ? new Vec3(0, 1, 0) : new Vec3(0, 0, 1);
+                        target = Vec3.getScaled(axis, (float) value);
+                    } else {
+                        float f = (float) value;
+                        target = new Vec3(
+                                (axisMask & 1) != 0 ? f : 0f,
+                                (axisMask & 2) != 0 ? f : 0f,
+                                (axisMask & 4) != 0 ? f : 0f);
+                    }
                     Vec3 delta = Vec3.getDiff(target, appliedMove);
                     if (delta.lengthSquared() > 1e-12) {
                         move.updateTranslation(delta);
@@ -1749,12 +1779,13 @@ public final class BlenderHooks {
 
         @Override
         public void setAxis(int bit, boolean exclude) {
-            MoveDimension nd = bit == 1 ? MoveDimension.X : (bit == 2 ? MoveDimension.Y : MoveDimension.Z);
-            if (nd == dim) nd = MoveDimension.XYZ;
-            finish(true);
-            if (GRAB == null) {
-                startGrab(tool, nd);
-            }
+            // 原版 Manipulator 的 MoveDimension 是构造期参数，运行中无法切换。
+            // 旧实现先 finish(true) 撤销、再 startGrab 重开，会把已经拖出的几何
+            // 直接丢掉；Shift+轴的 exclude 语义也根本无法表达。
+            // 这里改为明确禁用并保留当前会话，不破坏用户已完成的拖动。
+            hint(viewport, describe(tool, -1)
+                    + " 不支持 X/Y/Z 锁轴（如需锁轴请先确认，再按 G 移动）"
+                    + " ｜ 左键确认 · ESC 取消");
         }
 
         @Override
@@ -1910,13 +1941,24 @@ public final class BlenderHooks {
         public boolean dispatchKeyEvent(KeyEvent e) {
             if (e.getID() != KeyEvent.KEY_PRESSED) return false;
             Component src = e.getComponent();
-            if (src instanceof JTextComponent || src instanceof JSpinner
+            boolean typing = src instanceof JTextComponent || src instanceof JSpinner
                     || src instanceof JComboBox
-                    || (src instanceof JTable && ((JTable) src).isEditing())) {
-                return false;
+                    || (src instanceof JTable && ((JTable) src).isEditing());
+
+            // 抓取会话进行中时，ESC / 回车 / 锁轴必须优先处理；否则焦点一旦落到
+            // 文本框或下拉框，会话将永远无法退出（旧实现在这里直接 return false）。
+            if (GRAB != null) {
+                if (handleGrabKeys(e)) {
+                    repaintAll();
+                    e.consume();
+                    return true;
+                }
+                if (typing) return false;
             }
-            // 原视口菜单已经标注 Ctrl+F 创建面；这里把它接到同一个真实实现。
-            if (e.getKeyCode() == KeyEvent.VK_F && e.isControlDown()
+            if (typing) return false;
+
+            // 原视口菜单已经标注 Ctrl+F 创建面；抓取进行中禁止插入几何，避免破坏当前操作。
+            if (GRAB == null && e.getKeyCode() == KeyEvent.VK_F && e.isControlDown()
                     && !e.isAltDown() && !e.isMetaDown() && !e.isShiftDown()) {
                 ModelPanel panel = ProgramGlobals.getCurrentModelPanel();
                 if (panel != null) {
@@ -1930,28 +1972,19 @@ public final class BlenderHooks {
                     | InputEvent.META_DOWN_MASK)) != 0) {
                 return false;
             }
-            if (GRAB != null && handleGrabKeys(e)) {
-                repaintAll();
-                e.consume();
-                return true;
-            }
             boolean modeResult = handleModeKeys(e);
             if (modeResult) {
                 repaintAll();
                 e.consume();
                 return true;
             }
-            // Fallback: handleModeKeys 可能被中间某个检查短路了，直接尝试 startGrab
-            int key = e.getKeyCode();
-            if (GRAB == null && (key == KeyEvent.VK_G || key == KeyEvent.VK_R || key == KeyEvent.VK_S
-                    || key == KeyEvent.VK_E || key == KeyEvent.VK_P)) {
-                int ordinal = key == KeyEvent.VK_G ? 0 : (key == KeyEvent.VK_R ? 1 : (key == KeyEvent.VK_S ? 2
-                        : (key == KeyEvent.VK_E ? 3 : 4)));
-                if (startGrab(ordinal)) {
-                    repaintAll();
-                    e.consume();
-                    return true;
-                }
+            // Fallback: handleModeKeys 可能被中间某个检查短路了，直接尝试 startGrab。
+            // 映射统一走 grabToolForKey，杜绝 E/P 再次写反。
+            int tool = grabToolForKey(e.getKeyCode());
+            if (GRAB == null && tool >= 0 && startGrab(tool)) {
+                repaintAll();
+                e.consume();
+                return true;
             }
             if (e.getKeyCode() == KeyEvent.VK_PERIOD || e.getKeyCode() == KeyEvent.VK_DECIMAL) {
                 frameSelected(activeViewport());
@@ -2027,9 +2060,17 @@ public final class BlenderHooks {
                 GRAB.setAxis(bit, e.isShiftDown());
                 return true;
             }
-            // 数字精确输入：输入数值后回车确认
+            // 数字精确输入：输入数值后回车确认。
+            // 挤出 / 分离面（tool 3/4）沿用原版 Manipulator，applyNumeric 为空实现；
+            // 旧实现仍吞掉数字并提示「缩放 N 倍」，既误导又无效果，这里明确告知并忽略。
+            boolean numericSupported = GRAB.tool() <= 2;
             char ch = e.getKeyChar();
             if ((ch >= '0' && ch <= '9') || ch == '.' || ch == '-') {
+                if (!numericSupported) {
+                    hint(GRAB.viewport(), describe(GRAB.tool(), -1)
+                            + " 不支持数字精确输入 ｜ 移动鼠标拖动 · 左键确认 · ESC 取消");
+                    return true;
+                }
                 NUMERIC.append(ch);
                 showNumericHint();
                 return true;
@@ -2046,6 +2087,7 @@ public final class BlenderHooks {
             Component vp = GRAB == null ? null : GRAB.viewport();
             if (vp == null) return;
             int tool = GRAB.tool();
+            if (tool > 2) return;
             String unit = tool == 0 ? "单位" : (tool == 1 ? "度" : "倍");
             hint(vp, (tool == 0 ? "移动 " : tool == 1 ? "旋转 " : "缩放 ")
                     + NUMERIC + " " + unit + " ｜ 回车确认 · ESC 取消 · 退格删除");
@@ -2145,21 +2187,32 @@ public final class BlenderHooks {
             }
         }
 
+        /**
+         * 快捷键 -> 抓取 tool 编号的唯一映射（同时用于工具栏 actionType 序号）。
+         * G=移动(0) R=旋转(1) S=缩放(2) P=分离面/EXTRUDE(3) E=挤出/EXTEND(4)。
+         * 注意 E 与 P 的语义曾长期搞反：EXTRUDE 是「分离面」，EXTEND 才是真「挤出」。
+         * 所有按键分支都必须走这里，避免各处硬编码再次写反。
+         */
+        private static int grabToolForKey(int k) {
+            switch (k) {
+                case KeyEvent.VK_G: return 0;
+                case KeyEvent.VK_R: return 1;
+                case KeyEvent.VK_S: return 2;
+                case KeyEvent.VK_P: return 3;
+                case KeyEvent.VK_E: return 4;
+                default: return -1;
+            }
+        }
+
         private static boolean handleModeKeys(KeyEvent e) {
             int k = e.getKeyCode();
+            int tool = grabToolForKey(k);
             try {
                 if (k == KeyEvent.VK_A && e.isShiftDown()) {
                     return showAddMenu();
                 }
-                if (k == KeyEvent.VK_G || k == KeyEvent.VK_R || k == KeyEvent.VK_S) {
-                    int ordinal = k == KeyEvent.VK_G ? 0 : (k == KeyEvent.VK_R ? 1 : 2);
-                    return syncActionType(e, ordinal);
-                }
-                if (k == KeyEvent.VK_E) {
-                    return syncActionType(e, 3);
-                }
-                if (k == KeyEvent.VK_P) {
-                    return syncActionType(e, 4);
+                if (tool >= 0) {
+                    return syncActionType(e, tool);
                 }
                 if (k == KeyEvent.VK_L) {
                     return topologicalSelect(e.isShiftDown());
@@ -2174,11 +2227,9 @@ public final class BlenderHooks {
             } catch (Throwable t) {
                 System.out.println("[Blender] 模式键 " + e.getKeyChar()
                         + " 处理异常，尝试独立 Grab: " + t);
-                // 即使工具栏按钮更新失败，也要尝试建立 Grab 会话
-                if ((k == KeyEvent.VK_G || k == KeyEvent.VK_R || k == KeyEvent.VK_S)
-                        && GRAB == null) {
-                    int ordinal = k == KeyEvent.VK_G ? 0 : (k == KeyEvent.VK_R ? 1 : 2);
-                    return startGrab(ordinal);
+                // 即使工具栏按钮更新失败，也要尝试建立 Grab 会话（含 E/P）
+                if (tool >= 0 && GRAB == null) {
+                    return startGrab(tool);
                 }
             }
             return false;
