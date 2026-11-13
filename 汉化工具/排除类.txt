@@ -16,3 +16,16 @@ com/hiveworkshop/rms/ui/gui/modeledit/modelviewtree/CheckableDummyElement
 com/hiveworkshop/rms/ui/gui/modeledit/importpanel/ImportPanelNoGui2
 com/hiveworkshop/rms/ui/application/edit/mesh/viewport/DisplayViewUgg
 com/hiveworkshop/rms/ui/preferences/dataSourceChooser/DataSrcChooserTestPanel
+
+# 数据 / 文件格式令牌类：令牌是程序内部键，必须与 MDL 文件原文 / MdlUtils 常量 / AnimationMap 一致，
+# 不可翻译，否则：
+#   - AnimFlag.generateTypeId() 的 switch 失配 -> 默认 ALPHA ->
+#     Vec3AnimFlag.getIdentity(ALPHA) 把 Float 当 Vec3 强转 -> ClassCastException: Float cannot be cast to Vec3
+#   - 各类 readMdl 的 switch 失配 -> MDL 导入静默失败
+# 这些令牌（Translation/Rotation/Scaling/Color/TextureID/LifeSpan/Alpha/Visibility/Tangents/Shader …）
+# 由 MdlUtils.TOKEN_* 与 MDL 文件格式定义，必须保持英文。
+com/hiveworkshop/rms/parsers/mdlx
+com/hiveworkshop/rms/editor/model/animflag/AnimFlag
+com/hiveworkshop/rms/editor/model/util/TwiMdlxParser
+com/hiveworkshop/rms/editor/model/util/ModelFactory/TempOpenModelStuff
+com/hiveworkshop/rms/util/TestTimeline/KeyFrame
