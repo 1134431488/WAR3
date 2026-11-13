@@ -35,6 +35,11 @@ public final class RmsTooltipInstaller {
     private static final String TIP_RESOURCE = "/tooltips.txt";
     private static final String EXTERNAL_NAME = "提示说明.txt";
 
+    /** 说明表里以 !标签! 开头的行：把生硬的界面参数名改成一眼能懂的大白话。 */
+    private static final String LABEL_PREFIX = "!标签!";
+    private static final String LABEL_MARK = "rms.zh.label.fixed";
+    private static final Map<String, String> LABEL_FIX = new LinkedHashMap<String, String>();
+
     private static final Map<String, String> TIPS = new LinkedHashMap<String, String>();
     private static final Map<String, String> RULES = new LinkedHashMap<String, String>();
     // 纯英文界面残留（主要来自第三方 InfoNode Docking 库）只做精确匹配，
@@ -281,6 +286,14 @@ public final class RmsTooltipInstaller {
             if (k.length() == 0 || v.length() == 0) {
                 continue;
             }
+            // 标签改写行只进 LABEL_FIX，不当作气泡说明，也不计入说明条数。
+            if (k.startsWith(LABEL_PREFIX)) {
+                String old = normalize(k.substring(LABEL_PREFIX.length()));
+                if (old.length() > 0) {
+                    LABEL_FIX.put(old.toLowerCase(Locale.ROOT), v);
+                }
+                continue;
+            }
             out.put(k, v);
             out.put(k.toLowerCase(Locale.ROOT), v);
             n++;
@@ -393,10 +406,38 @@ public final class RmsTooltipInstaller {
         }
     }
 
+    /**
+     * 把「纬度」「混合时间」这类生硬的参数名改成大白话。
+     * 规则来自说明表的 !标签! 行，改文本即可调整，无需重编任何上游 class。
+     * 每个组件只改写一次，避免每轮扫描重复写。
+     */
+    private static void applyLabelFix(JComponent c) {
+        if (c.getClientProperty(LABEL_MARK) != null) {
+            return;
+        }
+        String raw = textOf(c);
+        if (!isEmpty(raw)) {
+            String key = normalize(raw).toLowerCase(Locale.ROOT);
+            String fixed = LABEL_FIX.get(key);
+            if (fixed != null && !fixed.equals(raw.trim())) {
+                // 保留原标签尾部的冒号，避免破坏面板排版
+                String suffix = raw.trim().endsWith(":") || raw.trim().endsWith("：") ? "：" : "";
+                String text = fixed + suffix;
+                if (c instanceof JLabel) {
+                    ((JLabel) c).setText(text);
+                } else if (c instanceof AbstractButton) {
+                    ((AbstractButton) c).setText(text);
+                }
+            }
+        }
+        c.putClientProperty(LABEL_MARK, Boolean.TRUE);
+    }
+
     private static void handle(JComponent c) {
         if (!(c instanceof AbstractButton) && !(c instanceof JLabel)) {
             return;
         }
+        applyLabelFix(c);
         String existing = c.getToolTipText();
         Object mark = c.getClientProperty(MARK);
         if (mark != null && mark.equals(existing)) {
@@ -509,11 +550,23 @@ public final class RmsTooltipInstaller {
         if (en != null) {
             return en;
         }
-        // 3) 最后才用中文关键词模糊匹配
+        // 3) 最后才用中文关键词模糊匹配：取最长命中，并跳过过短的泛词。
+        //    旧实现是「第一个 contains 命中即返回」，「粒子」「发射器」这类
+        //    泛词会抢先命中，把「空丝带粒子」套成「编辑粒子发射器参数」。
+        String bestKey = null;
+        String bestVal = null;
         for (Map.Entry<String, String> e : RULES.entrySet()) {
-            if (low.contains(e.getKey().toLowerCase(Locale.ROOT))) {
-                return e.getValue();
+            String rk = e.getKey().toLowerCase(Locale.ROOT);
+            if (rk.length() < 3) {
+                continue;
             }
+            if (low.contains(rk) && (bestKey == null || rk.length() > bestKey.length())) {
+                bestKey = rk;
+                bestVal = e.getValue();
+            }
+        }
+        if (bestVal != null) {
+            return bestVal;
         }
         return isLabel
                 ? "用于显示或设置「" + key + "」。修改数值后按回车或让输入框失去焦点即可生效。"
