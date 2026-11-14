@@ -52,6 +52,23 @@ FIXED_SIZE = {
 }
 WIDE_TAGS = (5, 6)
 
+# MDL / MDX 数据令牌：可能被 javac 内联进 UI 类的常量池，一旦翻成中文会让
+# layer.find("透明度")、find("发射速率") 等查不到 AnimFlag，或让 readMdl 的
+# switch 失配（历史上曾导致 NoSuchFieldError / Float cannot be cast to Vec3）。
+# 全量 apply 时跳过这些词条；整类排除（排除类.txt）覆盖不到这种「内联令牌」。
+# 注意：这里只列明确的内部键，不列 Alpha / Color / Name / Head / Tail 等
+# 同时也是常见 UI 标签的词，避免界面大面积退回英文。
+FORBIDDEN_INTERNAL_TOKENS = frozenset((
+    "Translation", "Rotation", "Scaling", "TextureID", "EmissionRate",
+    "LifeSpan", "Variation", "Latitude", "Gravity", "Speed",
+    "FilterMode", "TVertexAnim", "Matrices", "Visibility",
+    "Unfogged", "Unshaded", "SortPrimsFarZ", "LineEmitter",
+    "Modulate", "Modulate2x", "AlphaKey", "TailLength", "Time",
+    "EmissiveGain", "FresnelColor", "FresnelOpacity", "FresnelTeamColor",
+    "SphereEnvMap", "TwoSided", "Unlit", "NoDepthTest", "NoDepthSet",
+    "DontInterp", "Linear", "Hermite", "Bezier", "DontInherit",
+))
+
 
 class BadClassFile(Exception):
     pass
@@ -242,6 +259,16 @@ def cmd_apply(jar_path, dict_path, out_path, prefixes):
                     mapping[en] = zh
     else:
         raise SystemExit("词典格式错误：应为 {\"英文\":\"中文\"} 或 [{\"en\":..,\"zh\":..}]")
+
+    # 令牌级黑名单：整类排除无法覆盖被 javac 内联进 UI 类的 MDL 数据令牌，
+    # 全量套词典会连它们一起翻（历史崩溃根因）。正式构建请用
+    # 构建第七轮.py 的差分定向注入，这里只是给误用全量 apply 时兜底。
+    blocked = [k for k in mapping if k in FORBIDDEN_INTERNAL_TOKENS]
+    for k in blocked:
+        del mapping[k]
+    if blocked:
+        print("已跳过 %d 条 MDL 内部键词条（防止数据令牌被误翻）：%s"
+              % (len(blocked), ", ".join(sorted(blocked))))
 
     items = load_jar(jar_path)
     excludes = load_excludes()

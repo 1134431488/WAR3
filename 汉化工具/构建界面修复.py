@@ -44,6 +44,9 @@ import rms_patch as R  # noqa: E402
 ROOT = os.path.dirname(HERE)
 JAR = os.path.join(ROOT, "汉化版", "RMS_zh_CN.jar")
 BLENDER_JAR = os.path.join(ROOT, "汉化版", "rms-blender.jar")
+# 目标字节码级别。默认 8；含 Java 14 switch 表达式的源码（ModelComponentBrowserTree 等）
+# 需由调用方改为 14（见 构建第七轮.py）。
+RELEASE = "8"
 JAVAC_DEFAULT = os.path.join(ROOT, "_toolchain", "jdk-17", "bin", "javac.exe")
 SRC = os.path.join(ROOT, "RMS_Twilac_Source", "modelstudio", "src")
 # 发布仓库里没有完整的 RMS_Twilac_Source，只带本轮改动的源码存档；
@@ -151,7 +154,7 @@ def compile_sources():
     if missing:
         raise SystemExit("找不到源码（既不在 RMS_Twilac_Source 也不在 界面修复源码）:\n  "
                          + "\n  ".join(missing))
-    cmd = [javac, "--release", "8", "-encoding", "UTF-8", "-nowarn",
+    cmd = [javac, "--release", RELEASE, "-encoding", "UTF-8", "-nowarn",
            "-cp", classpath, "-d", BUILD] + files
     result = subprocess.run(cmd, capture_output=True)
     out = result.stdout.decode("gbk", "replace")

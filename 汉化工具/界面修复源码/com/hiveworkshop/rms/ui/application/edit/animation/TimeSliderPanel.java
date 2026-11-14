@@ -71,6 +71,7 @@ public class TimeSliderPanel extends JPanel implements SelectionListener {
 	private final JButton playButton;
 	private final KeyframeHandler keyframeHandler;
 	private final JComboBox<Sequence> sequenceComboBox = new JComboBox<>(new TwiComboBoxModel<>());
+	private final JPanel frameButtonPanel;
 	private boolean updatingCombo = false;
 
 	public TimeSliderPanel(ProgramPreferences preferences) {
@@ -94,6 +95,27 @@ public class TimeSliderPanel extends JPanel implements SelectionListener {
 		buttonPanel.add(setKeyframe, "wrap");
 		setTimeBounds = TimeSliderView.createSetTimeBoundsButton();
 		buttonPanel.add(setTimeBounds, "wrap");
+
+		// 跳帧能力原本就有（jumpFrames / setCurrentTime / TimeSkip 快捷键），
+		// 只是从没做成可见按钮。用 jumpFrames 而不是 timeStep：后者在尾帧会环绕取模跳回 0。
+		frameButtonPanel = new JPanel(new MigLayout("ins 0, gap 1"));
+		JButton firstFrame = new JButton("首帧");
+		firstFrame.setToolTipText("跳到动画第一帧");
+		firstFrame.addActionListener(e -> jumpTo(0));
+		JButton prevFrame = new JButton("上一帧");
+		prevFrame.setToolTipText("后退一帧");
+		prevFrame.addActionListener(e -> jumpTo(currentFrame() - 1));
+		JButton nextFrame = new JButton("下一帧");
+		nextFrame.setToolTipText("前进一帧");
+		nextFrame.addActionListener(e -> jumpTo(currentFrame() + 1));
+		JButton lastFrame = new JButton("尾帧");
+		lastFrame.setToolTipText("跳到动画最后一帧");
+		lastFrame.addActionListener(e -> jumpTo(timeEnvironment == null ? 0 : timeEnvironment.getLength()));
+		frameButtonPanel.add(firstFrame);
+		frameButtonPanel.add(prevFrame);
+		frameButtonPanel.add(nextFrame);
+		frameButtonPanel.add(lastFrame);
+		buttonPanel.add(frameButtonPanel, "wrap");
 
 		sequenceComboBox.setToolTipText("切换当前编辑的动画序列");
 		sequenceComboBox.addItemListener(e -> {
@@ -378,6 +400,18 @@ public class TimeSliderPanel extends JPanel implements SelectionListener {
 		repaint();
 	}
 
+	private int currentFrame() {
+		return timeEnvironment == null ? 0 : timeEnvironment.getEnvTrackTime();
+	}
+
+	/** 跳到指定帧并 clamp 到 [0, length]。不走 timeStep：它在尾帧会环绕取模跳回 0。 */
+	private void jumpTo(int frame) {
+		if (timeEnvironment == null) {
+			return;
+		}
+		setCurrentTime(Math.max(0, Math.min(frame, timeEnvironment.getLength())));
+	}
+
 	public void timeStep(int step) {
 		timeStep(step, false);
 	}
@@ -526,6 +560,8 @@ public class TimeSliderPanel extends JPanel implements SelectionListener {
 		allKF.setVisible(drawing);
 		sequenceComboBox.setVisible(drawing);
 		sequenceComboBox.setEnabled(drawing);
+		frameButtonPanel.setVisible(drawing);
+		frameButtonPanel.setEnabled(drawing);
 		repaint();
 	}
 }
