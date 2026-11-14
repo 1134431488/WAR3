@@ -29,3 +29,13 @@ com/hiveworkshop/rms/editor/model/animflag/AnimFlag
 com/hiveworkshop/rms/editor/model/util/TwiMdlxParser
 com/hiveworkshop/rms/editor/model/util/ModelFactory/TempOpenModelStuff
 com/hiveworkshop/rms/util/TestTimeline/KeyFrame
+
+# 【注意：整类排除覆盖不到的「内联令牌」陷阱】
+# MdlUtils.TOKEN_* 是 public static final String 编译期常量，javac 会把它们内联进
+# 调用方（含 UI 面板类）的常量池。于是 ComponentLayerPanel 这类「必须汉化的 UI 类」
+# 常量池里也混进了 Alpha / TextureID / EmissiveGain / FresnelColor 等 MDL 数据令牌，
+# 无差别替换会把它们翻成中文，导致 layer.find("透明度") 查不到 AnimFlag、材质动画静默失效；
+# RenderParticleEmitter2 的 find("EmissionRate") 同理（粒子发射速率读不到）。
+# 这类问题无法用「整类排除」解决（否则界面全英文），必须做令牌级黑名单。
+# 重新编译 UI 类时，请用 汉化工具/构建界面修复.py，其 FORBIDDEN_ENG 已拦下这些键；
+# 若日后再次全量 apply 词典，需先给 rms_patch.py 加同等的令牌级排除，切勿直接全量套词典。

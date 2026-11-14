@@ -14,6 +14,7 @@
 - 面模式**防透选**修复（线框模式仍保留透视多选，符合 Blender 习惯）
 - 工具栏标签修正：`EXTRUDE` →「分离面」、`EXTEND` →「挤出」（与真实语义一致）
 - **上游缺陷清理**：修复粒子渲染层与建模系统 24 个文件约 40 处低风险 BUG（详见下方已勾选条目）
+- **界面交互 5 项修复**：删除按钮白字不可见、粒子贴图未做图集分割、时间轴无法直接切换动画序列、大纲树无搜索（CTRL+F 无效）、点击大纲节点视口不高亮（详见下方已勾选条目）
 - 界面整体放大（高 DPI 适配）
 
 ## 许可证
@@ -65,6 +66,9 @@ cd source
 - [x] **爆米花粒子静态可见性空实现（已修复）**：`ParticleEmitterPopcorn.setStaticVis` 原为空方法，现已写入 alpha；爆米花拷贝构造补齐 `always` 与动画可见性映射。各粒子面板 `visibilityPanel` 的 setter 仍为 null，静态值界面编辑尚未接通。
 - [x] **建模系统 24 个文件约 40 处低风险缺陷（已修复）**：含 `AnimFlag.equals` 逻辑条件错误（`||` 应为 `&&`）、`MoveAction` 撤销方向写反（`set` 误当 `sub` 用）、`CopyCutPast` 动画模式快捷键分派丢失、挤出/分离面后 `fillGap` 重复执行、`MergeGeosets` 重复移除顶点、`SplitGeoset` 重复调用、`CreateFace` 零向量除零、空选择集焊点 / 选择中心返回 NaN、立方体绘制高度判据用错变量、手动变换面板缺 default 分支、视口右键菜单骨骼命名实为替换而非追加、爆米花粒子 `forEach`+`remove` 并发修改异常、`RibbonEmitter` 材质引用越界、rows/columns 默认 0 等，均已修复并编译注入。另清理约 30 处调试 `println` 与 1 个误导性循环变量命名（lambda 变量遮蔽外层 `geoset`）。
 - [x] **汉化注入误翻字段名 / 数据令牌致崩溃（已修复）**：上一版注入阶段把词典**无差别**替换常量池里所有匹配 UTF8，连「字段名 / 方法名 / 类引用」和「MDL/MDX 文件格式与动画数据令牌」也一起翻成中文，引发两类崩溃：① `NoSuchFieldError: 面向摄像机` / `ModelEditorActionType3.位移` —— 引用名被翻中文、但声明仍是英文，链接失败；② `ClassCastException: Float cannot be cast to Vec3` —— `Translation`/`Rotation`/`Scaling`/`Color`/`TextureID`/`LifeSpan`/`Alpha`/`Visibility` 等数据令牌被翻中文，而 `MdlUtils.TOKEN_*` / `AnimFlag.generateTypeId()` 仍按英文字面量匹配 `switch`，失配落到默认 `ALPHA`，`Vec3AnimFlag` 把 `1.f`（Float）强转成 `Vec3` 崩溃。已由 `汉化工具/repair_names.py`（按 owner 类声明成员 + 词典逆映射还原字段/方法引用名）与 `汉化工具/repair_tokens.py`（按 class 维度把数据令牌还原回该 class 源码实际使用的英文）修复，覆盖 `AnimFlag`、`MdlxParticleEmitterPopcorn` 等；并在 `排除类.txt` 加入 5 个数据令牌类前缀作为根因预防。修复后 jar 经 testzip 与启动验证，rms 包注入类字段隐患归零，UI 中文文案完好（如「网格基础」「顶点」「平面」）。
+- [x] **界面交互 5 项缺陷（已修复）**：① **删除 / X 按钮白字不可见** —— `ComponentPanel.getDeleteButton/getXButton` 与 `ComponentLayerPanel` 写死 `setForeground(Color.WHITE)`，而 InfoNode 主题忽略 `setBackground(Color.RED)` 却保留白字，白字配浅底看不见；现改用主题默认深色前景。② **粒子贴图未做阵列分割** —— `RenderParticleEmitter2.renderParticles` 把 `RenderParticle2` 打包的整数格号（`left/right/top/bottom`）直接当 UV 喂 `glTexCoord2f`，归一化 `uv/=cols/rows` 只写在 `isRibbonEmitter` 分支，而该方法恒为 `false`，于是整张贴图被播放；现补非 ribbon 分支除法并修正 ribbon 分支的重复除法。③ **时间轴不能切换动画** —— 原本时间轴没有序列选择器，只能去建模页下拉框切，属缺控件；现时间轴自带 `JComboBox<Sequence>`，`setModelHandler` 填充、`timeBoundsChanged` 双向同步。④ **大纲树无查找** —— 树从未实现搜索、全局 `CTRL+F` 也空闲无冲突，属缺特性；现树上方加搜索框 + 按名称过滤（自动保留命中项的父节点链）+ `CTRL+F` 聚焦。⑤ **点击大纲节点视口不高亮** —— `ComponentThingTree.mouseReleased` 的选中逻辑整段被注释，`ComponentTreeNode.doSelection` 又只挂在 renderer 的 JLabel 上（`ButtonCellEditor.isCellEditable` 恒 false，永不触发），写选区与重绘两层断链；现接回 `doSelection` 并刷新 3D 视口。改动由 `汉化工具/构建界面修复.py` 统一编译 → **差分定向注入中文** → 替换 20 个 class，源码存档在 `汉化工具/界面修复源码/`。
+- [ ] **部分 UI 面板仍残留「内联 MDL 令牌」误翻（待逐类排查）**：`MdlUtils.TOKEN_*` 是 `public static final String` 编译期常量，javac 会把它们内联进调用方（含 UI 面板类）的常量池。早期无差别词典替换因此把 `Alpha`/`TextureID`/`EmissiveGain`/`FresnelColor`/`FresnelOpacity`/`FresnelTeamColor` 等也翻成中文，导致 `layer.find("透明度")` 查不到 AnimFlag、材质动画静默失效；`RenderParticleEmitter2.find("EmissionRate")` 同理（粒子发射速率读不到）。本轮重编的 `ComponentLayerPanel` 与 `RenderParticleEmitter2` 已恢复英文（构建脚本用 `FORBIDDEN_ENG` 黑名单拦下），但**其它未重编的 UI 类里同类内联令牌可能仍被误翻**。整类排除不可行（会让界面退回英文），必须做令牌级黑名单；若日后再次全量套词典，请先补上这层防护。
+- [ ] **「复制材质」按钮实际会删除材质（上游缺陷，未修）**：SD 材质面板 `ComponentSDLayersPanel` 的 "Duplicate Material" 按钮在成品 jar 里绑定的 lambda 调用的是 `deleteMaterial()`。源码树虽已改成 `duplicateMaterial()`，但父类 `ComponentLayersPanel` 的新方法并未编进 jar（`RMS_Twilac_Source` 比成品 jar 新），直接重编会 `NoSuchMethodError`。本轮为不破坏二进制兼容未动它，**请勿点该按钮**，需要时手动复制材质。
 - [ ] **缺少魔兽 3 游戏素材时的资源告警**：未配置游戏目录时，启动阶段会在控制台刷 `JMpqException: File Not Found <...>`（主要是 `stock\particles\*.png` 粒子贴图，以及少量 TabIcons 图标）。异常被捕获，不影响运行；正式启动脚本使用 `javaw.exe`（无控制台），不显示也不写日志文件，仅调试模式可见。
 - [ ] **面模式选择**：单击可能仍会多选被遮挡的面（已加按质心距离去重，但共面 / 斜对角情况未全覆盖）。
 - [ ] **E / P 抓取交互**：挤出与分离面沿用原版 Manipulator，暂不支持 X/Y/Z 锁轴与数字精确输入（如需锁轴请先确认，再按 G 移动）；部分视角下拖动行为仍可能不符合预期。
@@ -73,7 +77,7 @@ cd source
 - [ ] **实时绘制纹理缺失**：只有贴图增删替换（`工具 → 编辑贴图`）与 UV 坐标编辑（`工具 → 编辑 UV 映射`），没有画笔 / 像素写回；需在外部图像编辑器绘制后导回。
 - [ ] **丝带拖尾无编辑视口预览**：`RibbonEmitter` 拖尾只在游戏里渲染，编辑器视口看不到，需导出验证；且丝带缺少速度 / 发散角 / 宽度等参数。
 - [ ] **建模页工具有限**：目前只有顶点 / 由所选创建面 / 骨骼 / 平面 / 立方体，以及数值变换；环切、倒角、细分、布尔、镜像、软选择等尚未实现（上游多为注释或空壳）。
-- [ ] **时间轴默认禁用易误认为损坏**：需先按 `A` 进入「动画」模式，且模型需自带动画序列，再按 `Ctrl + 空格` 播放。已在软件内帮助补说明。
+- [ ] **时间轴默认禁用易误认为损坏**：需先按 `A` 进入「动画」模式，且模型需自带动画序列，再按 `Ctrl + 空格` 播放。已在软件内帮助补说明；本轮已给时间轴加上动画序列下拉框，可直接切换序列，但「先按 A、模型自带序列」这两个前提不变。
 - [ ] （请使用者 / 作者持续补充……）
 
 ## 致谢
