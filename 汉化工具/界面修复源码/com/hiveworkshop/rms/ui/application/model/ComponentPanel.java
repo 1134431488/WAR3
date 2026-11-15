@@ -26,7 +26,7 @@ public abstract class ComponentPanel<T> extends JPanel {
 	public abstract ComponentPanel<T> setSelectedItem(T itemToSelect);
 
 	protected JButton getDeleteButton(ActionListener actionListener) {
-		JButton deleteButton = new JButton("Delete");
+		JButton deleteButton = new JButton("删除");
 		deleteButton.setBackground(Color.RED);
 		// 移除白色前景：InfoNode 主题会忽略 setBackground(Color.RED)、但保留白色前景，
 		// 导致白字配浅色按钮看不见。改为使用主题默认（深色）前景即可见。

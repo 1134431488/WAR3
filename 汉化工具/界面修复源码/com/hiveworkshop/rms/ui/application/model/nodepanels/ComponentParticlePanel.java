@@ -26,7 +26,7 @@ public class ComponentParticlePanel extends ComponentIdObjectPanel<ParticleEmitt
 
 		pathField = new ComponentEditorTextField(24, this::texturePathField);
 		topPanel.add(pathField, "");
-		JButton exportButton = new JButton("Export");
+		JButton exportButton = new JButton("导出");
 		exportButton.addActionListener(e -> export());
 		topPanel.add(exportButton, "wrap");
 

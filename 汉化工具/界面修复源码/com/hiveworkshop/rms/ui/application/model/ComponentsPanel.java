@@ -26,7 +26,7 @@ public class ComponentsPanel extends JPanel {
 		setLayout(cardLayout);
 
 		JPanel blankPanel = new JPanel();
-		blankPanel.add(new JLabel("Select a model component to get started..."), "");
+		blankPanel.add(new JLabel("请选择一个模型组件以开始…"), "");
 		add(new JScrollPane(blankPanel), BLANK);
 
 		addOverviewPanel(DisplayElementType.TEXTURE, new EditTexturesPanel(modelHandler));

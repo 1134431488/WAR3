@@ -62,7 +62,7 @@ public class ComponentLayerPanel extends JPanel {
 		JPanel titlePanel = new JPanel();
 		titlePanel.setLayout(new MigLayout("fill", "[left, grow][right]0[right]10[right]", "[]"));
 
-		JLabel layerLabel = new JLabel("Layer");
+		JLabel layerLabel = new JLabel("图层");
 		titlePanel.add(layerLabel);
 		JButton layerDeleteButton = getDeleteButton(this.layer);
 
@@ -149,18 +149,18 @@ public class ComponentLayerPanel extends JPanel {
 	private JPanel getTopSettingsPanel() {
 		JPanel topSettingsPanel = new JPanel(new MigLayout("ins 0"));
 
-		topSettingsPanel.add(new JLabel("Filter Mode:"));
+		topSettingsPanel.add(new JLabel("过滤模式："));
 		JComboBox<FilterMode> filterModeDropdown = new JComboBox<>(FilterMode.values());
 		filterModeDropdown.setSelectedItem(layer.getFilterMode());
 		filterModeDropdown.addItemListener(this::filterModeDropdownListener);
 		topSettingsPanel.add(filterModeDropdown, "wrap, growx");
 
-		topSettingsPanel.add(new JLabel("TVertex Anim:"));
-		JButton tVertexAnimButton = new JButton("Choose TVertex Anim");
-		tVertexAnimButton.setText(layer.getTextureAnim() == null ? "None" : layer.getTextureAnim().getFlagNames());
+		topSettingsPanel.add(new JLabel("TVertex 动画："));
+		JButton tVertexAnimButton = new JButton("选择 TVertex 动画");
+		tVertexAnimButton.setText(layer.getTextureAnim() == null ? "无" : layer.getTextureAnim().getFlagNames());
 		topSettingsPanel.add(tVertexAnimButton, "wrap, growx");
 
-		topSettingsPanel.add(new JLabel("CoordID:"));
+		topSettingsPanel.add(new JLabel("坐标 ID："));
 		IntEditorJSpinner coordIdSpinner = new IntEditorJSpinner(layer.getCoordId(), Integer.MIN_VALUE, this::setCoordId);
 		topSettingsPanel.add(coordIdSpinner, "wrap, growx");
 		return topSettingsPanel;
@@ -168,21 +168,21 @@ public class ComponentLayerPanel extends JPanel {
 
 	private void addHD1000Panels(JPanel leftHandSettingsPanel) {
 
-		ColorValuePanel fresnelColorPanel = new ColorValuePanel(modelHandler, "Fresnel Color");
+		ColorValuePanel fresnelColorPanel = new ColorValuePanel(modelHandler, "菲涅尔颜色");
 		fresnelColorPanel.reloadNewValue(layer.getFresnelColor(), (Vec3AnimFlag) layer.find(MdlUtils.TOKEN_FRESNEL_COLOR), layer, MdlUtils.TOKEN_FRESNEL_COLOR, layer::setFresnelColor);
 		leftHandSettingsPanel.add(fresnelColorPanel, "wrap, growx, hidemode 2");
 
-		FloatValuePanel fresnelOpacityPanel = new FloatValuePanel(modelHandler, "Fresnel Opacity");
+		FloatValuePanel fresnelOpacityPanel = new FloatValuePanel(modelHandler, "菲涅尔不透明度");
 		fresnelOpacityPanel.reloadNewValue((float) layer.getFresnelOpacity(), (FloatAnimFlag) layer.find(MdlUtils.TOKEN_FRESNEL_OPACITY), layer, MdlUtils.TOKEN_FRESNEL_OPACITY, layer::setFresnelOpacity);
 		leftHandSettingsPanel.add(fresnelOpacityPanel, "wrap, growx, hidemode 2");
 
-		FloatValuePanel fresnelTeamColor = new FloatValuePanel(modelHandler, "Fresnel Team Color");
+		FloatValuePanel fresnelTeamColor = new FloatValuePanel(modelHandler, "菲涅尔队伍颜色");
 		fresnelTeamColor.reloadNewValue((float) layer.getFresnelTeamColor(), (FloatAnimFlag) layer.find(MdlUtils.TOKEN_FRESNEL_TEAM_COLOR), layer, MdlUtils.TOKEN_FRESNEL_TEAM_COLOR, layer::setFresnelTeamColor);
 		leftHandSettingsPanel.add(fresnelTeamColor, "wrap, growx, hidemode 2");
 	}
 
 	private void addHD900Panels(JPanel leftHandSettingsPanel) {
-		FloatValuePanel emissiveGainPanel = new FloatValuePanel(modelHandler, "Emissive Gain");
+		FloatValuePanel emissiveGainPanel = new FloatValuePanel(modelHandler, "自发光增益");
 		emissiveGainPanel.reloadNewValue((float) layer.getEmissive(), (FloatAnimFlag) layer.find(MdlUtils.TOKEN_EMISSIVE_GAIN), layer, MdlUtils.TOKEN_EMISSIVE_GAIN, layer::setEmissive);
 		leftHandSettingsPanel.add(emissiveGainPanel, "wrap, growx, hidemode 2");
 	}
@@ -196,7 +196,7 @@ public class ComponentLayerPanel extends JPanel {
 
 	private JButton getDeleteButton(Layer layer) {
 		JButton layerDeleteButton;
-		layerDeleteButton = new JButton("Delete");
+		layerDeleteButton = new JButton("删除");
 		layerDeleteButton.setBackground(Color.RED);
 		// 移除白色前景：InfoNode 主题忽略红色背景但保留白字，导致白字看不见
 		// layerDeleteButton.setForeground(Color.WHITE);
@@ -222,7 +222,7 @@ public class ComponentLayerPanel extends JPanel {
 			}
 
 			if (numUses > 0) {
-				JOptionPane.showMessageDialog(this, "Cannot delete material as it is being used by " + numUses + " geosets.");
+				JOptionPane.showMessageDialog(this, "该材质正被 " + numUses + " 个几何集使用，无法删除。");
 			} else {
 				undoManager.pushAction(new RemoveMaterialAction(material, modelHandler.getModel(), changeListener).redo());
 			}

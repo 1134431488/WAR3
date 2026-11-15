@@ -61,15 +61,15 @@ public class ViewportPopupMenu extends JPopupMenu {
 		this.modelHandler = modelHandler;
 		this.modelEditorManager = modelEditorManager;
 
-		JMenu viewMenu = new JMenu("View");
+		JMenu viewMenu = new JMenu("视图");
 		add(viewMenu);
 
-		addMenuItem("Front", e -> changeViewportAxis(axises[0]), viewMenu);
-		addMenuItem("Back", e -> changeViewportAxis(axises[2]), viewMenu);
-		addMenuItem("Top", e -> changeViewportAxis(axises[4]), viewMenu);
-		addMenuItem("Bottom", e -> changeViewportAxis(axises[5]), viewMenu);
-		addMenuItem("Left", e -> changeViewportAxis(axises[1]), viewMenu);
-		addMenuItem("Right", e -> changeViewportAxis(axises[3]), viewMenu);
+		addMenuItem("前", e -> changeViewportAxis(axises[0]), viewMenu);
+		addMenuItem("后", e -> changeViewportAxis(axises[2]), viewMenu);
+		addMenuItem("顶", e -> changeViewportAxis(axises[4]), viewMenu);
+		addMenuItem("底", e -> changeViewportAxis(axises[5]), viewMenu);
+		addMenuItem("左", e -> changeViewportAxis(axises[1]), viewMenu);
+		addMenuItem("右", e -> changeViewportAxis(axises[3]), viewMenu);
 //		addMenuItem("Front" , new ChangeViewportAxisAction("Front" , (byte)  1, (byte)  2), viewMenu);
 //		addMenuItem("Back"  , new ChangeViewportAxisAction("Back"  , (byte) -2, (byte)  2), viewMenu);
 //		addMenuItem("Top"   , new ChangeViewportAxisAction("Top"   , (byte)  1, (byte) -1), viewMenu);
@@ -77,44 +77,44 @@ public class ViewportPopupMenu extends JPopupMenu {
 //		addMenuItem("Left"  , new ChangeViewportAxisAction("Left"  , (byte) -1, (byte)  2), viewMenu);
 //		addMenuItem("Right" , new ChangeViewportAxisAction("Right" , (byte)  0, (byte)  2), viewMenu);
 
-		JMenu meshMenu = new JMenu("Mesh");
+		JMenu meshMenu = new JMenu("网格");
 		add(meshMenu);
 
-		JMenuItem createFace = new JMenuItem("Create Face");
+		JMenuItem createFace = new JMenuItem("创建面");
 		// CTRL+F 已让给「模型 / 大纲」页的树搜索框，创建面改键为 CTRL+SHIFT+F
 		createFace.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F,
 				KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK));
 		createFace.addActionListener(e -> createFace());
 		meshMenu.add(createFace);
 
-		addMenuItem("Split Geoset and Add Team Color", e -> addTeamColor(modelHandler), meshMenu);
-		addMenuItem("Split Geoset", e -> splitGeoset(modelHandler), meshMenu);
+		addMenuItem("拆分几何集并添加队色", e -> addTeamColor(modelHandler), meshMenu);
+		addMenuItem("拆分几何集", e -> splitGeoset(modelHandler), meshMenu);
 
-		JMenu editMenu = new JMenu("Edit");
+		JMenu editMenu = new JMenu("编辑");
 		add(editMenu);
 
-		addMenuItem("Translation Type-in", e -> manualMove(this.parent), editMenu);
-		addMenuItem("Rotate Type-in", e -> manualRotate(this.parent), editMenu);
-		addMenuItem("Position Type-in", e -> manualSet(this.parent), editMenu);
-		addMenuItem("Scale Type-in", e -> manualScale(this.parent), editMenu);
+		addMenuItem("平移输入", e -> manualMove(this.parent), editMenu);
+		addMenuItem("旋转输入", e -> manualRotate(this.parent), editMenu);
+		addMenuItem("定位输入", e -> manualSet(this.parent), editMenu);
+		addMenuItem("缩放输入", e -> manualScale(this.parent), editMenu);
 
-		JMenu matrixMenu = new JMenu("Rig");
+		JMenu matrixMenu = new JMenu("绑定");
 		add(matrixMenu);
 
-		addMenuItem("Selected Mesh to Selected Nodes", e -> RigSelection.doRig(modelHandler), matrixMenu);
-		addMenuItem("Re-assign Matrix", e -> reAssignMatrix(this.parent), matrixMenu);
-		addMenuItem("View Matrix", e -> ViewSkinning.viewMatrices(modelHandler), matrixMenu);
-		addMenuItem("Re-assign HD Skin", e -> reAssignSkinning(this.parent), matrixMenu);
-		addMenuItem("View HD Skin", e -> ViewSkinning.viewHDSkinning(modelHandler), matrixMenu);
-		addMenuItem("View Skinning", e -> ViewSkinning.viewSkinning(modelHandler), matrixMenu);
+		addMenuItem("选中网格绑定到选中节点", e -> RigSelection.doRig(modelHandler), matrixMenu);
+		addMenuItem("重新分配矩阵", e -> reAssignMatrix(this.parent), matrixMenu);
+		addMenuItem("查看矩阵", e -> ViewSkinning.viewMatrices(modelHandler), matrixMenu);
+		addMenuItem("重新分配高清蒙皮", e -> reAssignSkinning(this.parent), matrixMenu);
+		addMenuItem("查看高清蒙皮", e -> ViewSkinning.viewHDSkinning(modelHandler), matrixMenu);
+		addMenuItem("查看蒙皮", e -> ViewSkinning.viewSkinning(modelHandler), matrixMenu);
 
-		JMenu nodeMenu = new JMenu("Node");
+		JMenu nodeMenu = new JMenu("节点");
 		add(nodeMenu);
 
-		addMenuItem("Set Parent", e -> setParent(this.parent), nodeMenu);
-		addMenuItem("Auto-Center Bone(s)", e -> modelHandler.getUndoManager().pushAction(autoCenterSelectedBones(modelHandler.getModelView())), nodeMenu);
-		addMenuItem("Rename Bone", e -> renameBone(this.parent), nodeMenu);
-		addMenuItem("Append Bone Suffix", e -> appendBoneBone(this.parent), nodeMenu);
+		addMenuItem("设置父级", e -> setParent(this.parent), nodeMenu);
+		addMenuItem("自动居中骨骼", e -> modelHandler.getUndoManager().pushAction(autoCenterSelectedBones(modelHandler.getModelView())), nodeMenu);
+		addMenuItem("重命名骨骼", e -> renameBone(this.parent), nodeMenu);
+		addMenuItem("追加骨骼后缀", e -> appendBoneBone(this.parent), nodeMenu);
 	}
 
 //	public Viewport getViewport() {

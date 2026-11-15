@@ -84,7 +84,7 @@ public abstract class ValuePanel<T> extends JPanel {
 		dynamicPanel.add(new JLabel("Dynamic"), "left, hidemode 3");
 		dynStatPanel.add("dynamic", dynamicPanel);
 
-		JButton makeStaticButton = new JButton("Make Static");
+		JButton makeStaticButton = new JButton("转为静态");
 		makeStaticButton.addActionListener(e -> makeStatic());
 		makeStaticButton.setVisible(true);
 //		dynamicPanel.add(makeStaticButton, "al 100% 0%, wrap, hidemode 3");
@@ -93,7 +93,7 @@ public abstract class ValuePanel<T> extends JPanel {
 		JPanel spinInterpPanel = new JPanel(new MigLayout("ins 0, gap 0, hidemode 3", "[]", "[]"));
 		dynamicPanel.add(spinInterpPanel, "wrap, hidemode 3");
 
-		spinInterpPanel.add(new JLabel("Interpolation:"));
+		spinInterpPanel.add(new JLabel("插值："));
 		interpTypeBox = new JComboBox<>(InterpolationType.values());
 		interpTypeBox.addItemListener(this::setInterpolationType);
 		spinInterpPanel.add(interpTypeBox, "wrap, hidemode 3");
@@ -106,7 +106,7 @@ public abstract class ValuePanel<T> extends JPanel {
 		JPanel staticPanel = new JPanel(new MigLayout("ins 0, gap 0, fill, hidemode 3", "[grow][][]", "[]"));
 //		staticPanel.add(new JLabel("Static"), "al 0% 0%");
 		staticPanel.add(new JLabel("Static"), "left");
-		makeDynamicButton = new JButton("Make Dynamic");
+		makeDynamicButton = new JButton("转为动态");
 		makeDynamicButton.addActionListener(e -> makeDynamic());
 //		staticPanel.add(makeDynamicButton, "al 100% 0%, wrap, hidemode 3");
 		staticPanel.add(makeDynamicButton, "right, wrap, hidemode 3");

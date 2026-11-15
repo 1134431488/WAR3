@@ -52,23 +52,23 @@ public class ComponentCameraPanel extends ComponentPanel<Camera> {
 
 		positionSpinner = new Vec3SpinnerArray().setVec3Consumer(this::setPosition);
 //		add(new JLabel("Position: "), "split, spanx 2");
-		add(new JLabel("Position: "), "");
+		add(new JLabel("位置："), "");
 		add(positionSpinner.spinnerPanel(), "wrap");
 
 		targetSpinner = new Vec3SpinnerArray().setVec3Consumer(this::setTarget);
 //		add(new JLabel("Target: "), "split, spanx 2");
-		add(new JLabel("Target: "), "");
+		add(new JLabel("目标："), "");
 		add(targetSpinner.spinnerPanel(), "wrap");
 
-		add(new JLabel("FoV"), "");
+		add(new JLabel("视野"), "");
 		fieldOfViewSpinner = new FloatEditorJSpinner(0f, 0f, this::setFov);
 		add(fieldOfViewSpinner, "wrap");
 
-		add(new JLabel("farClip"), "");
+		add(new JLabel("远裁剪"), "");
 		farClipSpinner = new FloatEditorJSpinner(0f, 0f, this::setFarClip);
 		add(farClipSpinner, "wrap");
 
-		add(new JLabel("nearClip"), "");
+		add(new JLabel("近裁剪"), "");
 		nearClipSpinner = new FloatEditorJSpinner(0f, 0f, this::setNearClip);
 		add(nearClipSpinner, "wrap");
 
