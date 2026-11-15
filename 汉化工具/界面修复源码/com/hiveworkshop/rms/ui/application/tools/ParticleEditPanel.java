@@ -73,7 +73,7 @@ public class ParticleEditPanel extends JPanel {
 		setLayout(new MigLayout());
 
 		viewportPanel.add(perspectiveViewport, BorderLayout.CENTER);
-		add(viewportPanel, "");
+		add(viewportPanel, "spanx, wrap");
 
 		SmartButtonGroup headTail = new SmartButtonGroup("头部 / 尾部");
 		headTail.addPanelConst("gap 0");
