@@ -64,6 +64,8 @@ B.SOURCES = [
     "com/hiveworkshop/rms/util/Vec3SpinnerArray.java",
     # ---- 第十三轮新增（动画预览滚轮切换除零崩溃修复）----
     "com/hiveworkshop/rms/ui/application/viewer/AnimationController.java",
+    # ---- 第十五轮新增（撤销绑定父级节点未解除 childrenNodes 解绑）----
+    "com/hiveworkshop/rms/editor/actions/nodes/AddNodeAction.java",
 ]
 
 B.PREFIXES = [s[:-5] for s in B.SOURCES]
