@@ -748,6 +748,17 @@ public final class BlenderHooks {
         menu.add(deleteNode);
 
         menu.addSeparator();
+        // 节点树右键：直接把被右击的 node 作为默认父级，
+        // 弹出的添加粒子对话框会预选它并把坐标同步到它的 pivot。
+        JMenu addEffectFromNode = new JMenu("添加粒子特效（挂到此节点）");
+        try {
+            com.hiveworkshop.rms.ui.application.AddParticlePanel
+                    .addParticleButtons(addEffectFromNode, node);
+        } catch (Throwable t) {
+            System.out.println("[Blender] 节点树粒子菜单失败: " + t);
+        }
+        menu.add(addEffectFromNode);
+
         JMenuItem focusSel = new JMenuItem("聚焦所选 (.)");
         focusSel.addActionListener(e -> frameSelected(activeViewport()));
         menu.add(focusSel);
@@ -1113,8 +1124,23 @@ public final class BlenderHooks {
         }
     }
 
+    /** 视口右键那一刻选中的单个 IdObject；无选中 / 多选返回 null。 */
+    private static IdObject firstSelectedIdObject(Component vp) {
+        try {
+            Object mv = field(vp, "modelView");
+            if (mv instanceof ModelView) {
+                Set<IdObject> sel = ((ModelView) mv).getSelectedIdObjects();
+                return (sel == null || sel.size() != 1) ? null : sel.iterator().next();
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
     private static void showViewportMenu(final Component vp, int x, int y) {
         JPopupMenu menu = new JPopupMenu();
+        // 右键前 BlenderMouse 已做过程序化点选，这里拿到的就是刚点中的骨骼
+        IdObject defaultParent = firstSelectedIdObject(vp);
 
         JMenuItem focusSel = new JMenuItem("聚焦所选 (.)");
         focusSel.addActionListener(e -> frameSelected(vp));
@@ -1149,7 +1175,8 @@ public final class BlenderHooks {
         menu.addSeparator();
         JMenu addEffect = new JMenu("添加粒子特效");
         try {
-            com.hiveworkshop.rms.ui.application.AddParticlePanel.addParticleButtons(addEffect);
+            com.hiveworkshop.rms.ui.application.AddParticlePanel
+                    .addParticleButtons(addEffect, defaultParent);
         } catch (Throwable t) {
             System.out.println("[Blender] 粒子预设菜单构建失败: " + t);
         }

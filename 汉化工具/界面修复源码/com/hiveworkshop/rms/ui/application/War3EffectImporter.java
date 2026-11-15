@@ -2,7 +2,9 @@ package com.hiveworkshop.rms.ui.application;
 
 import com.hiveworkshop.rms.editor.actions.nodes.AddNodeAction;
 import com.hiveworkshop.rms.editor.model.Bitmap;
+import com.hiveworkshop.rms.editor.model.Bone;
 import com.hiveworkshop.rms.editor.model.EditableModel;
+import com.hiveworkshop.rms.editor.model.IdObject;
 import com.hiveworkshop.rms.editor.model.Layer;
 import com.hiveworkshop.rms.editor.model.Material;
 import com.hiveworkshop.rms.editor.model.ParticleEmitter2;
@@ -16,6 +18,7 @@ import com.hiveworkshop.rms.ui.application.edit.mesh.activity.UndoManager;
 import com.hiveworkshop.rms.ui.application.viewer.AnimationViewer;
 import com.hiveworkshop.rms.ui.gui.modeledit.ModelPanel;
 import com.hiveworkshop.rms.ui.preferences.SaveProfile;
+import com.hiveworkshop.rms.util.Vec3;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -49,6 +52,9 @@ public final class War3EffectImporter {
 	private final JLabel statusLabel = new JLabel(" ");
 	private final JLabel hintLabel = new JLabel(" ");
 	private final AnimationViewer previewViewer;
+	private final Bone nullParent = new Bone("无父级（模型根）");
+	private final JComboBox<IdObject> parentCombo = new JComboBox<>();
+	private final JCheckBox snapPivot = new JCheckBox("特效落在骨骼位置", true);
 	private List<String> allModels = new ArrayList<>();
 	private volatile long previewGeneration = 0;
 
@@ -90,8 +96,6 @@ public final class War3EffectImporter {
 		split.setResizeWeight(0.44);
 		root.add(split, BorderLayout.CENTER);
 
-		JPanel bottom = new JPanel(new BorderLayout(6, 4));
-		bottom.add(statusLabel, BorderLayout.CENTER);
 		JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
 		JButton importBtn = new JButton("导入到当前模型");
 		importBtn.addActionListener(e -> importSelected());
@@ -99,8 +103,26 @@ public final class War3EffectImporter {
 		closeBtn.addActionListener(e -> dialog.dispose());
 		buttons.add(importBtn);
 		buttons.add(closeBtn);
-		bottom.add(buttons, BorderLayout.EAST);
-		root.add(bottom, BorderLayout.SOUTH);
+
+		// 绑定父级：选一个当前模型的骨骼/节点，导入的发射器会挂到它下面。
+		JPanel parentRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+		parentRow.add(new JLabel("绑定父级："));
+		parentCombo.setPreferredSize(new Dimension(300, 24));
+		parentCombo.setToolTipText("可直接输入名称搜索节点；导入时按此项建立父子关系");
+		parentRow.add(parentCombo);
+		parentRow.add(snapPivot);
+		JButton refreshParents = new JButton("刷新节点");
+		refreshParents.setToolTipText("切换到别的模型后点此重新读取节点列表");
+		refreshParents.addActionListener(e -> reloadParentNodes());
+		parentRow.add(refreshParents);
+
+		JPanel bottomRow = new JPanel(new BorderLayout(6, 4));
+		bottomRow.add(statusLabel, BorderLayout.CENTER);
+		bottomRow.add(buttons, BorderLayout.EAST);
+		JPanel south = new JPanel(new BorderLayout(0, 4));
+		south.add(parentRow, BorderLayout.NORTH);
+		south.add(bottomRow, BorderLayout.SOUTH);
+		root.add(south, BorderLayout.SOUTH);
 
 		searchField.getDocument().addDocumentListener(new DocumentListener() {
 			public void insertUpdate(DocumentEvent e) { applyFilter(); }
@@ -123,6 +145,7 @@ public final class War3EffectImporter {
 		dialog.setSize(1080, 620);
 		dialog.setLocationRelativeTo(owner);
 		reloadModels();
+		reloadParentNodes();
 	}
 
 	public static void show(Component parent) {
@@ -132,6 +155,40 @@ public final class War3EffectImporter {
 
 	private void status(String text) {
 		statusLabel.setText(text);
+	}
+
+	/** 从当前模型读取可作为父级的节点，复用 AddParticlePanel 的可搜索下拉逻辑。 */
+	private void reloadParentNodes() {
+		List<IdObject> nodes = new ArrayList<>();
+		ModelPanel modelPanel = ProgramGlobals.getCurrentModelPanel();
+		if (modelPanel != null && modelPanel.getModel() != null) {
+			nodes.addAll(modelPanel.getModel().getIdObjects());
+		}
+		nodes.add(0, nullParent);
+		parentCombo.setModel(new DefaultComboBoxModel<>(nodes.toArray(new IdObject[0])));
+		parentCombo.setRenderer(new DefaultListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+					boolean isSelected, boolean cellHasFocus) {
+				String label;
+				if (value == nullParent) {
+					label = "无父级（模型根）";
+				} else if (value instanceof IdObject) {
+					IdObject node = (IdObject) value;
+					label = node.getClass().getSimpleName() + "：" + node.getName();
+				} else {
+					label = String.valueOf(value);
+				}
+				return super.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
+			}
+		});
+		parentCombo.setMaximumRowCount(14);
+		try {
+			// 同包 package-private：可编辑 + 输入过滤 + 回车选第一项
+			AddParticlePanel.configureSearchable(parentCombo, nodes, nullParent);
+		} catch (Throwable t) {
+			System.out.println("[war3导入] 父级搜索初始化失败: " + t);
+		}
 	}
 
 	private void reloadModels() {
@@ -250,6 +307,15 @@ public final class War3EffectImporter {
 		}
 		EditableModel target = modelPanel.getModelHandler().getModel();
 		UndoManager undo = modelPanel.getModelHandler().getUndoManager();
+		// 对话框是非模态的，期间用户可能切换了模型；父级必须校验仍属于当前 target，
+		// 否则会把发射器挂到别的模型的对象上。
+		Object chosenParent = parentCombo.getSelectedItem();
+		IdObject parent = (chosenParent instanceof IdObject) ? (IdObject) chosenParent : null;
+		if (parent == nullParent || (parent != null && !target.getIdObjects().contains(parent))) {
+			parent = null;
+		}
+		final Vec3 parentPivot = parent == null ? null : parent.getPivotPoint();
+		final boolean snapToParent = snapPivot.isSelected();
 		try (InputStream stream = GameDataFileSystem.getDefault().getResourceAsStream(path)) {
 			if (stream == null) {
 				status("读取失败：" + path);
@@ -299,7 +365,11 @@ public final class War3EffectImporter {
 			int imported = 0;
 			for (ParticleEmitter2 emitter : source.getParticleEmitter2s()) {
 				ParticleEmitter2 copy = new ParticleEmitter2(emitter);
-				copy.setParent(null);   // 源模型的父级骨骼不在目标模型里，必须断开
+				// 断开源模型父级；若用户选了目标模型的节点则挂上去，并可选落在骨骼位置
+				copy.setParent(parent);
+				if (snapToParent && parentPivot != null) {
+					copy.setPivotPoint(parentPivot);
+				}
 				copy.setTextureId(textureRemap.getOrDefault(emitter.getTextureId(), 0));
 				undo.pushAction(new AddNodeAction(target, copy,
 						ModelStructureChangeListener.changeListener).redo());
@@ -307,7 +377,10 @@ public final class War3EffectImporter {
 			}
 			for (RibbonEmitter emitter : source.getRibbonEmitters()) {
 				RibbonEmitter copy = new RibbonEmitter(emitter);
-				copy.setParent(null);
+				copy.setParent(parent);
+				if (snapToParent && parentPivot != null) {
+					copy.setPivotPoint(parentPivot);
+				}
 				copy.setMaterialId(materialRemap.getOrDefault(emitter.getMaterialId(), 0));
 				copy.updateMaterialRef(target.getMaterials());
 				undo.pushAction(new AddNodeAction(target, copy,
@@ -325,8 +398,10 @@ public final class War3EffectImporter {
 				ProgramGlobals.getMainPanel().repaintSelfAndChildren();
 			}
 			modelPanel.repaintSelfAndRelatedChildren();
-			status("已导入 " + imported + " 个发射器（贴图 " + textureRemap.size()
-					+ "、材质 " + materialRemap.size() + " 已重映射），可在撤销栈里撤销。"
+			status("已导入 " + imported + " 个发射器（父级："
+					+ (parent == null ? "模型根" : parent.getName()) + "，贴图 "
+					+ textureRemap.size() + "、材质 " + materialRemap.size()
+					+ " 已重映射），可在撤销栈里撤销。"
 					+ "动画曲线可能仍引用源模型序列，请在当前模型里检查。");
 		} catch (Throwable t) {
 			status("导入失败：" + t);

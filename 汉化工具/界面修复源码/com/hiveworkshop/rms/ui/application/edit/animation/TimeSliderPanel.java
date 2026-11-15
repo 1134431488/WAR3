@@ -98,7 +98,7 @@ public class TimeSliderPanel extends JPanel implements SelectionListener {
 
 		// 跳帧能力原本就有（jumpFrames / setCurrentTime / TimeSkip 快捷键），
 		// 只是从没做成可见按钮。用 jumpFrames 而不是 timeStep：后者在尾帧会环绕取模跳回 0。
-		frameButtonPanel = new JPanel(new MigLayout("ins 0, gap 1"));
+		frameButtonPanel = new JPanel(new MigLayout("ins 2, gap 4"));
 		JButton firstFrame = new JButton("首帧");
 		firstFrame.setToolTipText("跳到动画第一帧");
 		firstFrame.addActionListener(e -> jumpTo(0));
@@ -128,13 +128,19 @@ public class TimeSliderPanel extends JPanel implements SelectionListener {
 		});
 		buttonPanel.add(sequenceComboBox, "wrap");
 
+		// 与刻度条统一的深色底；复选框改用浅色文字，否则深底上是黑字看不见。
+		allKF.setOpaque(false);
+		allKF.setForeground(new Color(0xE6, 0xE6, 0xE6));
 		buttonPanel.add(allKF, "wrap");
 		buttonPanel.setOpaque(true);
+		buttonPanel.setBackground(new Color(0x2B, 0x2D, 0x30));
+		frameButtonPanel.setOpaque(false);
 		add(buttonPanel, "aligny top, shrink");
 
 //		JPanel timelinePanel = new TimeLinePanel_test();
 		JPanel timelinePanel = getTimelinePanel();
 		timelinePanel.setOpaque(true);
+		timelinePanel.setBackground(new Color(0x2B, 0x2D, 0x30));
 		add(timelinePanel, "growx, growy, aligny top");
 
 		timeSlider = new TimeSlider(timelinePanel);

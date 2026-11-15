@@ -43,6 +43,11 @@ public final class BlenderButtonStyle {
         if (text == null || text.trim().isEmpty()) {
             return;
         }
+        // 大纲树每行前面的 E / V 状态圆按钮：它们的背景色承载「开/关」语义，
+        // 且组件被 TreeCellRenderer 反复复用，套新 UI 会导致文字重叠、缩进错乱。
+        if (text.length() <= 1) {
+            return;
+        }
         // UI 实例一致 => 已套用且主题未重置；换了 UI 则重新套用
         if (button.getClientProperty(KEY) == button.getUI()) {
             return;
@@ -78,6 +83,9 @@ public final class BlenderButtonStyle {
 
     public static void applyToTree(Container container) {
         if (container == null) return;
+        // JTree / JTable / JList 的 renderer 组件临时挂在 CellRendererPane 下，
+        // 它们不是真正的界面按钮（且被复用），一律不碰。
+        if (container instanceof CellRendererPane) return;
         Component[] components;
         try {
             components = container.getComponents();
