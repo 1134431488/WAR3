@@ -62,6 +62,8 @@ B.SOURCES = [
     # ---- 第十一轮新增 ----
     "com/hiveworkshop/rms/util/TinyToggleButton.java",
     "com/hiveworkshop/rms/util/Vec3SpinnerArray.java",
+    # ---- 第十三轮新增（动画预览滚轮切换除零崩溃修复）----
+    "com/hiveworkshop/rms/ui/application/viewer/AnimationController.java",
 ]
 
 B.PREFIXES = [s[:-5] for s in B.SOURCES]
