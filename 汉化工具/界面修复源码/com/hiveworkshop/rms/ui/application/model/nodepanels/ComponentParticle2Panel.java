@@ -88,6 +88,21 @@ public class ComponentParticle2Panel extends ComponentIdObjectPanel<ParticleEmit
 		// 原来用 add(...) 加到 this，可见性面板被挤到父类变换面板之后；
 		// 改成整体加入 topPanel 与其他参数排在一起。
 		topPanel.add(paramGrid, "spanx, growx, wrap");
+
+		// 第十一轮：面板被切换 / 隐藏时停止播放 Timer，避免后台持续 repaint 泄漏
+		addComponentListener(new java.awt.event.ComponentAdapter() {
+			@Override
+			public void componentHidden(java.awt.event.ComponentEvent e) {
+				stopTimer();
+			}
+		});
+	}
+
+	private void stopTimer() {
+		if (playTimer != null && playTimer.isRunning()) {
+			playTimer.stop();
+			playToggle.setSelected(false);
+		}
 	}
 
 	/** 构建时间控制条：动画序列下拉 + 时间滑杆 + 当前帧标签 + 播放开关。 */

@@ -104,8 +104,8 @@ public class DisplayViewUgg extends ModelDependentView {
 		return this;
 	}
 
-	Color onC = new Color(255, 255, 255);
-	Color offC = new Color(100, 100, 100);
+	Color onC = new Color(0x47, 0x72, 0xB3);
+	Color offC = new Color(0x3C, 0x3F, 0x41);
 	private TinyToggleButton getButton(String text, boolean initial, Consumer<Boolean> boolConsumer){
 		TinyToggleButton button = new TinyToggleButton(text, onC, offC, boolConsumer);
 		button.setOn(initial);

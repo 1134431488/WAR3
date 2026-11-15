@@ -22,3 +22,6 @@ Thumbs.db
 .idea/
 *.iml
 *.iml
+
+# ---- 构建临时目录 ----
+_sandbox/

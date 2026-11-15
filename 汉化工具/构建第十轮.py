@@ -59,6 +59,8 @@ B.SOURCES = [
     "com/hiveworkshop/rms/ui/application/edit/animation/TimeBarPainter.java",
     # ---- 第十轮新增 ----
     "com/hiveworkshop/rms/ui/application/model/ComponentsPanel.java",
+    # ---- 第十一轮新增 ----
+    "com/hiveworkshop/rms/util/TinyToggleButton.java",
 ]
 
 B.PREFIXES = [s[:-5] for s in B.SOURCES]
