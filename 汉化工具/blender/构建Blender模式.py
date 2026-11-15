@@ -77,7 +77,7 @@ def main():
     os.makedirs(BUILD, exist_ok=True)
     sources = [os.path.join(HERE, n) for n in (
         "BlenderPrefsTool.java", "BlenderLauncher.java", "BlenderHooks.java",
-        "ScalingHooks.java")]
+        "ScalingHooks.java", "BlenderButtonStyle.java")]
 
     print("[1/3] 编译增强类 ...")
     subprocess.run([java_bin("javac"), "--release", "8", "-encoding", "UTF-8",

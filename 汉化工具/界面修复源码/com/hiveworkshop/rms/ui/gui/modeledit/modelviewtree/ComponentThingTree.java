@@ -230,7 +230,9 @@ public class ComponentThingTree extends JTree {
 		Set<IdObject> visible = isFilterActive() ? computeVisibleIdObjects() : Collections.emptySet();
 
 		for (IdObject object : modelHandler.getModel().getIdObjects()) {
-			if (!visible.isEmpty() && !visible.contains(object)) {
+			// 过滤激活时只保留命中项及其祖先链。原写法在「无匹配」时 visible 为空，
+			// 会因为 !visible.isEmpty() 为 false 而放行全部节点，看起来像搜索没生效。
+			if (isFilterActive() && !visible.contains(object)) {
 				continue;
 			}
 			IdObject parent = object.getParent();
@@ -309,6 +311,15 @@ public class ComponentThingTree extends JTree {
 		this.searchFilter = (filter == null) ? "" : filter.trim();
 		if (modelHandler != null) {
 			reloadTree();
+			// 过滤后自动展开命中项，否则用户只看到折叠的根/分组，以为搜索没反应。
+			TreeNode root = (TreeNode) getModel().getRoot();
+			TreePath rootPath = new TreePath(root);
+			if (isFilterActive()) {
+				expandAllChildren(root, rootPath, true);
+			} else {
+				expandPath(rootPath);
+			}
+			repaint();
 		}
 	}
 

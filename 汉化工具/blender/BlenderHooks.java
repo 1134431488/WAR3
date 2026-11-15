@@ -1,4 +1,6 @@
 import com.hiveworkshop.rms.editor.actions.UndoAction;
+import com.hiveworkshop.rms.editor.actions.mesh.DeleteGeosetAction;
+import com.hiveworkshop.rms.editor.actions.nodes.DeleteNodesAction;
 import com.hiveworkshop.rms.editor.actions.nodes.NameChangeAction;
 import com.hiveworkshop.rms.editor.actions.selection.SetSelectionUggAction;
 import com.hiveworkshop.rms.editor.actions.util.GenericMoveAction;
@@ -116,8 +118,12 @@ public final class BlenderHooks {
                 AWTEvent.MOUSE_EVENT_MASK);
         SwingUtilities.invokeLater(() -> {
             scan();
-            new Timer(500, ev -> scan()).start();
-            System.out.println("[Blender] 视口/节点树联动、G/R/S/E/P 变换已启动"
+            // 顺带统一普通 JButton 的深色 Blender 风格（apply 幂等，覆盖动态新建的窗口）
+            new Timer(500, ev -> {
+                scan();
+                BlenderButtonStyle.applyToAllWindows();
+            }).start();
+            System.out.println("[Blender] 视口/节点树联动、G/R/S/E/P 变换、按钮风格统一已启动"
                     + "（G移动 R旋转 S缩放 E挤出 P分离面）。");
         });
     }
@@ -561,14 +567,65 @@ public final class BlenderHooks {
         if (treeNode instanceof NodeThing) return ((NodeThing<?>) treeNode).getItem();
         if (treeNode instanceof javax.swing.tree.DefaultMutableTreeNode) {
             Object uo = ((javax.swing.tree.DefaultMutableTreeNode) treeNode).getUserObject();
-            if (uo != null && checkableClass().isInstance(uo)) {
-                try {
-                    return uo.getClass().getMethod("getItem").invoke(uo);
-                } catch (Throwable ignored) {
+            if (uo != null) {
+                if (checkableClass().isInstance(uo)) {
+                    try {
+                        return uo.getClass().getMethod("getItem").invoke(uo);
+                    } catch (Throwable ignored) {
+                    }
+                }
+                // 「模型」页的 ChoosableDisplayElement 把模型对象放在 item 字段里，
+                // 没有 getItem()，这里用反射取出，让该树也能右键 / Delete 删除节点。
+                if (uo.getClass().getName().endsWith("ChoosableDisplayElement")) {
+                    try {
+                        return field(uo, "item");
+                    } catch (Throwable ignored) {
+                    }
                 }
             }
         }
         return null;
+    }
+
+    /** 从任意组件向上找到它所在的 JTree。 */
+    private static JTree treeOf(Component c) {
+        for (Component p = c; p != null; p = p.getParent()) {
+            if (p instanceof JTree) return (JTree) p;
+        }
+        return null;
+    }
+
+    /**
+     * 删除节点树里选中的对象。必须走现成 UndoAction：DeleteNodesAction 内建
+     * 子节点 reparent 与顶点骨骼绑定清理，直接改 EditableModel 会留下悬空引用且无法撤销。
+     */
+    private static boolean deleteTreeItem(JTree tree, Object item) {
+        if (item == null) return false;
+        try {
+            UndoManager undo = undoOf(tree);
+            ModelView mv = modelViewOf(tree);
+            if (undo == null || mv == null) return false;
+            UndoAction action;
+            if (item instanceof IdObject) {
+                action = new DeleteNodesAction((IdObject) item,
+                        ModelStructureChangeListener.changeListener, mv.getModel());
+            } else if (item instanceof Geoset) {
+                action = new DeleteGeosetAction(mv.getModel(), (Geoset) item,
+                        ModelStructureChangeListener.changeListener);
+            } else if (item instanceof com.hiveworkshop.rms.editor.model.Camera) {
+                action = new DeleteNodesAction((com.hiveworkshop.rms.editor.model.Camera) item,
+                        ModelStructureChangeListener.changeListener, mv.getModel());
+            } else {
+                return false;
+            }
+            undo.pushAction(action.redo());
+            ProgramGlobals.getMainPanel().repaintSelfAndChildren();
+            repaintAll();
+            return true;
+        } catch (Throwable t) {
+            System.out.println("[Blender] 删除节点失败: " + t);
+            return false;
+        }
     }
 
     private static Class<?> CHECKABLE;
@@ -685,6 +742,10 @@ public final class BlenderHooks {
         JMenuItem rename = new JMenuItem("重命名节点…");
         rename.addActionListener(e -> renameNode(tree, node));
         menu.add(rename);
+
+        JMenuItem deleteNode = new JMenuItem("删除节点 (Delete)");
+        deleteNode.addActionListener(e -> deleteTreeItem(tree, node));
+        menu.add(deleteNode);
 
         menu.addSeparator();
         JMenuItem focusSel = new JMenuItem("聚焦所选 (.)");
@@ -1083,6 +1144,61 @@ public final class BlenderHooks {
             repaintAll();
         });
         menu.add(reset);
+
+        // 视口右键补建模相关操作：按当前选区/模型直接调用现成静态入口
+        menu.addSeparator();
+        JMenu addEffect = new JMenu("添加粒子特效");
+        try {
+            com.hiveworkshop.rms.ui.application.AddParticlePanel.addParticleButtons(addEffect);
+        } catch (Throwable t) {
+            System.out.println("[Blender] 粒子预设菜单构建失败: " + t);
+        }
+        menu.add(addEffect);
+
+        JMenuItem emptyRibbon = new JMenuItem("添加空丝带");
+        emptyRibbon.addActionListener(e ->
+                com.hiveworkshop.rms.ui.application.AddParticlePanel.addEmptyRibbon());
+        menu.add(emptyRibbon);
+
+        JMenuItem emptyPopcorn = new JMenuItem("添加空爆米花粒子");
+        emptyPopcorn.addActionListener(e ->
+                com.hiveworkshop.rms.ui.application.AddParticlePanel.addEmptyPopcorn());
+        menu.add(emptyPopcorn);
+
+        JMenuItem createFaceItem = new JMenuItem("由所选创建面 (Ctrl+Shift+F)");
+        createFaceItem.addActionListener(e -> {
+            ModelPanel mp = ProgramGlobals.getCurrentModelPanel();
+            if (mp != null && mp.getModelHandler() != null) {
+                com.hiveworkshop.rms.ui.application.actionfunctions.CreateFace
+                        .createFace(mp.getModelHandler());
+            }
+        });
+        menu.add(createFaceItem);
+
+        JMenuItem weldItem = new JMenuItem("焊点");
+        weldItem.addActionListener(e -> {
+            ModelPanel mp = ProgramGlobals.getCurrentModelPanel();
+            if (mp != null && mp.getModelHandler() != null) {
+                com.hiveworkshop.rms.ui.application.actionfunctions.WeldVerts
+                        .doWeld(mp.getModelHandler());
+            }
+        });
+        menu.add(weldItem);
+
+        JMenuItem flipNormalsItem = new JMenuItem("翻转法线");
+        flipNormalsItem.addActionListener(e -> {
+            ModelPanel mp = ProgramGlobals.getCurrentModelPanel();
+            if (mp != null && mp.getModelHandler() != null) {
+                com.hiveworkshop.rms.ui.application.actionfunctions.FlipNormals
+                        .insideOutNormals(mp.getModelHandler());
+            }
+        });
+        menu.add(flipNormalsItem);
+
+        JMenuItem deleteSelected = new JMenuItem("删除所选 (Delete)");
+        deleteSelected.addActionListener(e ->
+                com.hiveworkshop.rms.ui.application.actionfunctions.Delete.deleteActionRes());
+        menu.add(deleteSelected);
 
         menu.show(vp, x, y);
     }
@@ -1957,9 +2073,25 @@ public final class BlenderHooks {
             }
             if (typing) return false;
 
-            // 原视口菜单已经标注 Ctrl+F 创建面；抓取进行中禁止插入几何，避免破坏当前操作。
+            // 节点树里按 Delete：按【树选中行】删除。全局 Delete 动作依赖 3D 视口选区，
+            // 而树的 TreeSelection 并不写入 ModelView 选区，所以在这里单独处理。
+            // 焦点在树上时无论节点是否可删都吞掉事件，避免落到全局 Delete 误删视口选区。
+            if (GRAB == null && e.getKeyCode() == KeyEvent.VK_DELETE
+                    && !e.isControlDown() && !e.isAltDown() && !e.isMetaDown() && !e.isShiftDown()) {
+                JTree tree = treeOf(src);
+                if (tree != null) {
+                    TreePath path = tree.getSelectionPath();
+                    Object item = path == null ? null : itemOf(path.getLastPathComponent());
+                    deleteTreeItem(tree, item);
+                    e.consume();
+                    return true;
+                }
+            }
+
+            // CTRL+F 已让给「模型 / 大纲」页的树搜索框；创建面改键为 CTRL+SHIFT+F，
+            // ViewportPopupMenu 的 accelerator 与建模页按钮文案同步修改。
             if (GRAB == null && e.getKeyCode() == KeyEvent.VK_F && e.isControlDown()
-                    && !e.isAltDown() && !e.isMetaDown() && !e.isShiftDown()) {
+                    && e.isShiftDown() && !e.isAltDown() && !e.isMetaDown()) {
                 ModelPanel panel = ProgramGlobals.getCurrentModelPanel();
                 if (panel != null) {
                     com.hiveworkshop.rms.ui.application.actionfunctions.CreateFace

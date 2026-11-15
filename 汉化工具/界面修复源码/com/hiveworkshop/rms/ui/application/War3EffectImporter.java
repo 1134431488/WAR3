@@ -1,13 +1,19 @@
 package com.hiveworkshop.rms.ui.application;
 
+import com.hiveworkshop.rms.editor.actions.nodes.AddNodeAction;
 import com.hiveworkshop.rms.editor.model.Bitmap;
 import com.hiveworkshop.rms.editor.model.EditableModel;
+import com.hiveworkshop.rms.editor.model.Layer;
+import com.hiveworkshop.rms.editor.model.Material;
 import com.hiveworkshop.rms.editor.model.ParticleEmitter2;
 import com.hiveworkshop.rms.editor.model.RibbonEmitter;
 import com.hiveworkshop.rms.filesystem.GameDataFileSystem;
 import com.hiveworkshop.rms.filesystem.sources.DataSourceDescriptor;
 import com.hiveworkshop.rms.filesystem.sources.MpqDataSourceDescriptor;
 import com.hiveworkshop.rms.parsers.mdlx.util.MdxUtils;
+import com.hiveworkshop.rms.ui.application.edit.ModelStructureChangeListener;
+import com.hiveworkshop.rms.ui.application.edit.mesh.activity.UndoManager;
+import com.hiveworkshop.rms.ui.application.viewer.AnimationViewer;
 import com.hiveworkshop.rms.ui.gui.modeledit.ModelPanel;
 import com.hiveworkshop.rms.ui.preferences.SaveProfile;
 
@@ -22,15 +28,17 @@ import java.util.List;
 
 /**
  * 从 war3 本体（MPQ / CASC 数据源）浏览原生技能特效，把其中的粒子 / 丝带发射器
- * 连同所需贴图导入当前模型，导入后即可像普通节点一样在编辑器里修改。
+ * 连同贴图、材质导入当前模型，导入后即可像普通节点一样在编辑器里修改。
  *
- * 设计说明：
- * - 数据源沿用 GameDataFileSystem.getMergedListfile()，不自己解析 MPQ；
- *   未配置游戏目录时提供「添加本机 war3 目录…」按钮，扫描目录下的 War3*.mpq 并注册。
- * - 贴图按路径去重后追加到目标模型，并重映射 ParticleEmitter2.textureId，
- *   否则导入的粒子会引用目标模型里不存在的贴图索引。
- * - 只搬发射器与贴图，不搬源模型的动画序列；拷贝对象自带的 AnimFlag 可能仍引用
- *   源模型的 Sequence，界面上会提示用户在当前模型里检查/重建动画。
+ * 关键点：
+ * - 数据源沿用 GameDataFileSystem.getMergedListfile()，未配置游戏目录时提供
+ *   「添加本机 war3 目录…」按钮扫描 War3*.mpq 并注册。
+ * - 右侧用项目现成的 AnimationViewer 做实时预览（点击列表即切换），GL 组件只创建一次。
+ * - 贴图 / 材质按路径去重后追加到目标模型，并分别重映射 ParticleEmitter2.textureId
+ *   与 RibbonEmitter.materialId（丝带靠 materialId → Material → Layer → Bitmap 链取贴图，
+ *   只搬发射器会丢材质，这就是此前「丝带导入没效果」的原因）。
+ * - 用 AddNodeAction 加入节点：它会同时 model.add + nodesUpdated()，既让树立刻刷新、
+ *   可撤销，也避免了此前「导入后什么都没发生」的问题。
  */
 public final class War3EffectImporter {
 
@@ -40,7 +48,9 @@ public final class War3EffectImporter {
 	private final JTextField searchField = new JTextField();
 	private final JLabel statusLabel = new JLabel(" ");
 	private final JLabel hintLabel = new JLabel(" ");
+	private final AnimationViewer previewViewer;
 	private List<String> allModels = new ArrayList<>();
+	private volatile long previewGeneration = 0;
 
 	private War3EffectImporter(Frame owner) {
 		dialog = new JDialog(owner, "从 war3 本体导入特效", false);
@@ -62,8 +72,23 @@ public final class War3EffectImporter {
 		north.add(hintLabel, BorderLayout.SOUTH);
 		root.add(north, BorderLayout.NORTH);
 
+		// 右侧预览：GL 组件只创建一次，切换列表时仅 setModel，不反复重建 GL 上下文。
+		AnimationViewer viewer = null;
+		try {
+			viewer = new AnimationViewer(ProgramGlobals.getPrefs(), false);
+			viewer.setTitle("特效预览（点击左侧列表切换）");
+		} catch (Throwable t) {
+			System.out.println("[war3导入] 预览组件初始化失败: " + t);
+		}
+		previewViewer = viewer;
+		JComponent right = viewer != null ? viewer
+				: new JLabel("预览不可用（OpenGL 初始化失败）", SwingConstants.CENTER);
+
 		modelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		root.add(new JScrollPane(modelList), BorderLayout.CENTER);
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				new JScrollPane(modelList), right);
+		split.setResizeWeight(0.44);
+		root.add(split, BorderLayout.CENTER);
 
 		JPanel bottom = new JPanel(new BorderLayout(6, 4));
 		bottom.add(statusLabel, BorderLayout.CENTER);
@@ -82,6 +107,11 @@ public final class War3EffectImporter {
 			public void removeUpdate(DocumentEvent e) { applyFilter(); }
 			public void changedUpdate(DocumentEvent e) { applyFilter(); }
 		});
+		modelList.addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting()) {
+				showPreview(modelList.getSelectedValue());
+			}
+		});
 		modelList.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -90,7 +120,7 @@ public final class War3EffectImporter {
 		});
 
 		dialog.setContentPane(root);
-		dialog.setSize(820, 560);
+		dialog.setSize(1080, 620);
 		dialog.setLocationRelativeTo(owner);
 		reloadModels();
 	}
@@ -119,7 +149,7 @@ public final class War3EffectImporter {
 		if (allModels.size() < 20) {
 			hintLabel.setText("未检测到 war3 游戏数据源：点右上「添加本机 war3 目录…」选择含 War3.mpq 的目录，即可浏览全部原生技能特效。");
 		} else {
-			hintLabel.setText("数据源已就绪：可搜索雷电 / 霜冻 / 冲击波等技能特效模型，选中后点「导入到当前模型」。");
+			hintLabel.setText("数据源已就绪：点击左侧任意 .mdx 即在右侧实时预览，选中后点「导入到当前模型」。");
 		}
 		applyFilter();
 	}
@@ -133,6 +163,43 @@ public final class War3EffectImporter {
 			}
 		}
 		status("共 " + allModels.size() + " 个模型，当前显示 " + listModel.size() + " 个。");
+	}
+
+	/** 后台解析 .mdx，EDT 里只做 setModel；generation 防止快速连点导致乱序覆盖。 */
+	private void showPreview(final String path) {
+		if (previewViewer == null || path == null) {
+			return;
+		}
+		final long generation = ++previewGeneration;
+		status("正在加载预览…");
+		new SwingWorker<EditableModel, Void>() {
+			@Override
+			protected EditableModel doInBackground() throws Exception {
+				try (InputStream stream = GameDataFileSystem.getDefault().getResourceAsStream(path)) {
+					return stream == null ? null : MdxUtils.loadEditable(stream);
+				}
+			}
+
+			@Override
+			protected void done() {
+				if (generation != previewGeneration) {
+					return;
+				}
+				try {
+					EditableModel model = get();
+					if (model == null) {
+						status("找不到资源：" + path);
+						return;
+					}
+					previewViewer.setModel(model);
+					previewViewer.setTitle(path);
+					int emitters = model.getParticleEmitter2s().size() + model.getRibbonEmitters().size();
+					status("预览：" + path + "（发射器 " + emitters + " 个）");
+				} catch (Exception ex) {
+					status("预览失败：" + (ex.getCause() == null ? ex : ex.getCause()));
+				}
+			}
+		}.execute();
 	}
 
 	private void addWar3Directory() {
@@ -182,6 +249,7 @@ public final class War3EffectImporter {
 			return;
 		}
 		EditableModel target = modelPanel.getModelHandler().getModel();
+		UndoManager undo = modelPanel.getModelHandler().getUndoManager();
 		try (InputStream stream = GameDataFileSystem.getDefault().getResourceAsStream(path)) {
 			if (stream == null) {
 				status("读取失败：" + path);
@@ -189,7 +257,7 @@ public final class War3EffectImporter {
 			}
 			EditableModel source = MdxUtils.loadEditable(stream);
 
-			// 贴图按路径去重，建立 源索引 -> 目标索引 映射
+			// 1) 贴图按路径去重，建立 源索引 -> 目标索引 映射
 			Map<Integer, Integer> textureRemap = new HashMap<>();
 			List<Bitmap> targetTextures = target.getTextures();
 			int sourceIndex = 0;
@@ -211,25 +279,55 @@ public final class War3EffectImporter {
 				textureRemap.put(sourceIndex++, newIndex);
 			}
 
+			// 2) 材质深拷贝 + Layer.textureId 二次重映射（丝带靠这条链取贴图）
+			Map<Integer, Integer> materialRemap = new HashMap<>();
+			List<Material> targetMaterials = target.getMaterials();
+			int sourceMaterialIndex = 0;
+			for (Material sourceMaterial : source.getMaterials()) {
+				Material materialCopy = sourceMaterial.deepCopy();
+				for (Layer layer : materialCopy.getLayers()) {
+					int newTextureId = textureRemap.getOrDefault(layer.getTextureId(), 0);
+					layer.setTextureId(newTextureId);
+					if (newTextureId >= 0 && newTextureId < targetTextures.size()) {
+						layer.setTexture(targetTextures.get(newTextureId));
+					}
+				}
+				target.add(materialCopy);
+				materialRemap.put(sourceMaterialIndex++, targetMaterials.size() - 1);
+			}
+
 			int imported = 0;
 			for (ParticleEmitter2 emitter : source.getParticleEmitter2s()) {
 				ParticleEmitter2 copy = new ParticleEmitter2(emitter);
+				copy.setParent(null);   // 源模型的父级骨骼不在目标模型里，必须断开
 				copy.setTextureId(textureRemap.getOrDefault(emitter.getTextureId(), 0));
-				target.add(copy);
+				undo.pushAction(new AddNodeAction(target, copy,
+						ModelStructureChangeListener.changeListener).redo());
 				imported++;
 			}
 			for (RibbonEmitter emitter : source.getRibbonEmitters()) {
 				RibbonEmitter copy = new RibbonEmitter(emitter);
-				target.add(copy);
+				copy.setParent(null);
+				copy.setMaterialId(materialRemap.getOrDefault(emitter.getMaterialId(), 0));
+				copy.updateMaterialRef(target.getMaterials());
+				undo.pushAction(new AddNodeAction(target, copy,
+						ModelStructureChangeListener.changeListener).redo());
 				imported++;
 			}
 
+			// 3) 让渲染器重建发射器列表，否则新导入的粒子不会出现在视口里
+			try {
+				modelPanel.getModelHandler().getRenderModel().updateNodes(true);
+			} catch (Throwable t) {
+				System.out.println("[war3导入] 渲染器刷新失败: " + t);
+			}
 			if (ProgramGlobals.getMainPanel() != null) {
 				ProgramGlobals.getMainPanel().repaintSelfAndChildren();
 			}
 			modelPanel.repaintSelfAndRelatedChildren();
-			status("已导入 " + imported + " 个发射器、重映射 " + textureRemap.size()
-					+ " 张贴图。动画曲线可能引用源模型序列，请在当前模型里检查。");
+			status("已导入 " + imported + " 个发射器（贴图 " + textureRemap.size()
+					+ "、材质 " + materialRemap.size() + " 已重映射），可在撤销栈里撤销。"
+					+ "动画曲线可能仍引用源模型序列，请在当前模型里检查。");
 		} catch (Throwable t) {
 			status("导入失败：" + t);
 			t.printStackTrace();

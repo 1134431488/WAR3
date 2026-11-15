@@ -116,19 +116,49 @@ public class CreatorModelingPanel extends JPanel {
 	public JPanel getMeshBasicsPanel() {
 		JPanel meshBasicsPanel = new JPanel(new MigLayout("wrap 1, ins 0, fillx", "[grow,fill]"));
 		meshBasicsPanel.add(getDrawToolsPanel(), "growx");
-//		meshBasicsPanel.add(getEditToolsPanel(), "growx");
+		// 原来这两块被注释/隐藏，导致「建模」页只有 4 个按钮、下面一大片空白
+		meshBasicsPanel.add(getEditToolsPanel(), "growx");
+		meshBasicsPanel.add(getMeshToolsPanel(), "growx");
 		return meshBasicsPanel;
 
 	}
 
 	private JPanel getEditToolsPanel() {
 		JPanel editToolsPanel = new JPanel(new MigLayout("wrap 1, gap 0, ins 0, fill", "[grow]", ""));
-		editToolsPanel.setBorder(BorderFactory.createTitledBorder("Manipulate"));
+		editToolsPanel.setBorder(BorderFactory.createTitledBorder("变换工具"));
 
-		for (ModeButton2 modeButton2 : ProgramGlobals.getActionTypeGroup().getModeButtons()) {
-			editToolsPanel.add(modeButton2);
+		var group = ProgramGlobals.getActionTypeGroup();
+		if (group != null) {
+			for (ModeButton2 modeButton2 : group.getModeButtons()) {
+				editToolsPanel.add(modeButton2);
+			}
 		}
 		return editToolsPanel;
+	}
+
+	/** 把已实现但一直没暴露的建模操作做成按钮网格。 */
+	private JPanel getMeshToolsPanel() {
+		JPanel panel = new JPanel(new MigLayout("wrap 2, ins 2, fill", "[grow,fill][grow,fill]"));
+		panel.setBorder(BorderFactory.createTitledBorder("常用编辑"));
+		addTool(panel, "焊点", () -> com.hiveworkshop.rms.ui.application.actionfunctions.WeldVerts.doWeld(modelHandler));
+		addTool(panel, "翻转法线", () -> com.hiveworkshop.rms.ui.application.actionfunctions.FlipNormals.insideOutNormals(modelHandler));
+		addTool(panel, "简化几何", () -> com.hiveworkshop.rms.ui.application.actionfunctions.SimplifyGeometry.simplifyGeometry(modelHandler));
+		addTool(panel, "由所选创建面", () -> CreateFace.createFace(modelHandler));
+		addTool(panel, "删除所选", () -> com.hiveworkshop.rms.ui.application.actionfunctions.Delete.deleteActionRes());
+		addTool(panel, "添加空丝带", () -> com.hiveworkshop.rms.ui.application.AddParticlePanel.addEmptyRibbon());
+		return panel;
+	}
+
+	private void addTool(JPanel panel, String text, Runnable action) {
+		JButton button = new JButton(text);
+		button.addActionListener(e -> {
+			try {
+				action.run();
+			} catch (Throwable t) {
+				JOptionPane.showMessageDialog(panel, "操作失败：" + t);
+			}
+		});
+		panel.add(button, "growx");
 	}
 
 	private JPanel getDrawToolsPanel() {

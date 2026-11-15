@@ -114,7 +114,17 @@ public class ParticleEditPanel extends JPanel {
 		sliderPanel.add(new SmartNumberSlider("变化 (%)", copy.getVariation() * 100, 500, (i) -> copy.setVariation(i / 100d)), SLIDER_CONSTRAINTS);
 		sliderPanel.add(new SmartNumberSlider("发射速率", copy.getEmissionRate(), 100, (i) -> copy.setEmissionRate(i)), SLIDER_CONSTRAINTS);
 		sliderPanel.add(new SmartNumberSlider("发射张角", copy.getLatitude(), 180, (i) -> copy.setLatitude(i)), SLIDER_CONSTRAINTS);
-		sliderPanel.add(new SmartNumberSlider("重力", copy.getGravity(), -100, 100, (i) -> copy.setGravity(i)), SLIDER_CONSTRAINTS);
+		// 重力同时可能被 AnimFlag(KGTR) 覆盖：getRenderGravity 优先返回动画插值，
+		// 只改静态值会被完全忽略。改值时清掉该曲线，让静态重力真正生效。
+		SmartNumberSlider gravitySlider = new SmartNumberSlider("重力", copy.getGravity(), -100, 100,
+				(i) -> {
+					if (copy.has(MdlUtils.TOKEN_GRAVITY)) {
+						copy.remove(MdlUtils.TOKEN_GRAVITY);
+					}
+					copy.setGravity(i);
+				});
+		gravitySlider.setToolTipText("拖动即时改变预览中粒子的重力；写入模型需点「应用」或「添加为新发射器」");
+		sliderPanel.add(gravitySlider, SLIDER_CONSTRAINTS);
 		sliderPanel.add(new SmartNumberSlider("宽度", copy.getWidth(), 400, (i) -> copy.setWidth(i)), SLIDER_CONSTRAINTS);
 		sliderPanel.add(new SmartNumberSlider("长度", copy.getLength(), 400, (i) -> copy.setLength(i)), SLIDER_CONSTRAINTS);
 		sliderPanel.add(new SmartNumberSlider("生命周期 (~ 0.1 秒)", copy.getLifeSpan() * 10, 200, (i) -> copy.setLifeSpan(i / 10d)).setMinLowerLimit(0).setMaxUpperLimit(1000), SLIDER_CONSTRAINTS);

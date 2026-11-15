@@ -190,7 +190,16 @@ public final class ModelComponentBrowserTree extends JTree {
 			IdObject parent = idObject.getParent();
 
 			DefaultMutableTreeNode parentTreeNode = nodeToTreeElement.get(parent);
-			parentTreeNode.add(nodeToTreeElement.get(idObject));
+			if (parentTreeNode == null) {
+				// 父级可能是相机节点 / 已被移除的骨骼，不在 getIdObjects() 列表里。
+				// 原实现直接 parentTreeNode.add(...) 会在「重置布局」重建树时抛 NPE，
+				// 这里兜底挂到「节点」分组，并跳过已挂到别处的子节点。
+				parentTreeNode = nodeToTreeElement.get(null);
+			}
+			DefaultMutableTreeNode child = nodeToTreeElement.get(idObject);
+			if (parentTreeNode != null && child != null && child.getParent() == null) {
+				parentTreeNode.add(child);
+			}
 		}
 
 		DefaultMutableTreeNode cameras = new DefaultMutableTreeNode(new ChoosableDisplayElement<>(DisplayElementType.CAMERA, modelView, null).setNameFunc(() -> "Cameras"));

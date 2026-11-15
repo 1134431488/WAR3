@@ -43,14 +43,17 @@ public class ComponentParticle2Panel extends ComponentIdObjectPanel<ParticleEmit
 		editParticle.addActionListener(e -> viewParticlePanel());
 		topPanel.add(editParticle, "spanx, growx, wrap");
 
-		widthPanel = new FloatValuePanel(modelHandler, "Width");
-		lengthPanel = new FloatValuePanel(modelHandler, "Length");
-		latitudePanel = new FloatValuePanel(modelHandler, "Latitude");
-		variationPanel = new FloatValuePanel(modelHandler, "Variation");
-		speedPanel = new FloatValuePanel(modelHandler, "Speed");
-		gravityPanel = new FloatValuePanel(modelHandler, "Gravity");
-		emissionPanel = new FloatValuePanel(modelHandler, "EmissionRate");
-		visibilityPanel = new FloatValuePanel(modelHandler, "Visibility");
+		// 标题直接写中文：这些词同时是 MdlUtils.TOKEN_* 的值，若靠词典注入会把
+		// find("Gravity") 之类的内部键一起翻掉。源码写中文后常量池里中文标题与
+		// 英文 token 是两个独立 UTF8，互不干扰（updatePanels 里仍用 TOKEN_* 常量）。
+		widthPanel = new FloatValuePanel(modelHandler, "宽度");
+		lengthPanel = new FloatValuePanel(modelHandler, "长度");
+		latitudePanel = new FloatValuePanel(modelHandler, "发射张角");
+		variationPanel = new FloatValuePanel(modelHandler, "变化");
+		speedPanel = new FloatValuePanel(modelHandler, "速度");
+		gravityPanel = new FloatValuePanel(modelHandler, "重力");
+		emissionPanel = new FloatValuePanel(modelHandler, "发射速率");
+		visibilityPanel = new FloatValuePanel(modelHandler, "可见性");
 		topPanel.add(emissionPanel, "spanx, growx, wrap");
 		topPanel.add(speedPanel, "spanx, growx, wrap");
 		topPanel.add(gravityPanel, "spanx, growx, wrap");
