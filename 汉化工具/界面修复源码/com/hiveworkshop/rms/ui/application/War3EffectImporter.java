@@ -157,6 +157,23 @@ public final class War3EffectImporter {
 		statusLabel.setText(text);
 	}
 
+	/** 当前模型视图里唯一选中的节点（骨骼 / 辅助器 / 特效等）；无或多个选中时返回 null。 */
+	private IdObject currentSelectedNode() {
+		try {
+			ModelPanel modelPanel = ProgramGlobals.getCurrentModelPanel();
+			if (modelPanel == null || modelPanel.getModelView() == null) {
+				return null;
+			}
+			Set<IdObject> selected = modelPanel.getModelView().getSelectedIdObjects();
+			if (selected != null && selected.size() == 1) {
+				return selected.iterator().next();
+			}
+		} catch (Throwable t) {
+			System.out.println("[war3导入] 读取当前选中节点失败: " + t);
+		}
+		return null;
+	}
+
 	/** 从当前模型读取可作为父级的节点，复用 AddParticlePanel 的可搜索下拉逻辑。 */
 	private void reloadParentNodes() {
 		List<IdObject> nodes = new ArrayList<>();
@@ -166,6 +183,13 @@ public final class War3EffectImporter {
 		}
 		nodes.add(0, nullParent);
 		parentCombo.setModel(new DefaultComboBoxModel<>(nodes.toArray(new IdObject[0])));
+		// 第十轮：打开对话框时按当前模型选中的唯一节点预选父级。
+		// 必须在 configureSearchable 之前设置——其 DocumentListener 触发的
+		// 延迟 refilter / setModel 会把之后设置的选中项覆盖掉。
+		IdObject preferred = currentSelectedNode();
+		if (preferred != null && nodes.contains(preferred)) {
+			parentCombo.setSelectedItem(preferred);
+		}
 		parentCombo.setRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index,

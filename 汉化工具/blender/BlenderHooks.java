@@ -1069,7 +1069,22 @@ public final class BlenderHooks {
                 rightPressed = false;
                 boolean moved = Math.abs(e.getX() - rightX) > 4 || Math.abs(e.getY() - rightY) > 4;
                 if (!moved) {
+                    // 右键前先快照选区：下面的程序化点选会整体替换选区，
+                    // 若点在空白处会把用户在大纲树选中的骨骼清掉，
+                    // 导致「添加粒子特效」的父级预选失效（第十轮反馈）。
+                    java.util.List<IdObject> beforePick = java.util.Collections.emptyList();
+                    try {
+                        beforePick = snapshotSelection(field(viewport, "modelView"));
+                    } catch (Exception ignored) {
+                    }
                     performSelectClick(e.getX(), e.getY());
+                    try {
+                        Object mv = field(viewport, "modelView");
+                        if (snapshotSelection(mv).isEmpty() && !beforePick.isEmpty()) {
+                            restoreSelection(mv, beforePick);
+                        }
+                    } catch (Exception ignored) {
+                    }
                     syncTreeToSelection(viewport);
                     showViewportMenu(viewport, e.getX(), e.getY());
                 }
@@ -1129,12 +1144,54 @@ public final class BlenderHooks {
         try {
             Object mv = field(vp, "modelView");
             if (mv instanceof ModelView) {
-                Set<IdObject> sel = ((ModelView) mv).getSelectedIdObjects();
-                return (sel == null || sel.size() != 1) ? null : sel.iterator().next();
+                ModelView view = (ModelView) mv;
+                Set<IdObject> sel = view.getSelectedIdObjects();
+                if (sel != null && sel.size() == 1) {
+                    return sel.iterator().next();
+                }
+                // 兜底：视图模式下 idObjectsEditable/Visible 关闭时
+                // getSelectedIdObjects() 恒返回空集，改读原始选区字段。
+                try {
+                    java.lang.reflect.Field f = ModelView.class.getDeclaredField("selectedIdObjects");
+                    f.setAccessible(true);
+                    Object raw = f.get(view);
+                    if (raw instanceof Set) {
+                        Set<?> rawSet = (Set<?>) raw;
+                        if (rawSet.size() == 1 && rawSet.iterator().next() instanceof IdObject) {
+                            return (IdObject) rawSet.iterator().next();
+                        }
+                    }
+                } catch (Throwable ignored) {
+                }
             }
         } catch (Throwable ignored) {
         }
         return null;
+    }
+
+    /** 取当前选区的不可变快照；取不到时返回空列表。 */
+    private static java.util.List<IdObject> snapshotSelection(Object mv) {
+        try {
+            if (mv instanceof ModelView) {
+                Set<IdObject> sel = ((ModelView) mv).getSelectedIdObjects();
+                if (sel == null || sel.isEmpty()) {
+                    return java.util.Collections.emptyList();
+                }
+                return new java.util.ArrayList<>(sel);
+            }
+        } catch (Throwable ignored) {
+        }
+        return java.util.Collections.emptyList();
+    }
+
+    /** 把快照写回选区（仅当快照非空才调用）。 */
+    private static void restoreSelection(Object mv, java.util.List<IdObject> snapshot) {
+        try {
+            if (mv instanceof ModelView && snapshot != null && !snapshot.isEmpty()) {
+                ((ModelView) mv).setSelectedIdObjects(snapshot);
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     private static void showViewportMenu(final Component vp, int x, int y) {

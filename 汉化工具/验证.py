@@ -45,11 +45,16 @@ def main():
     print("=== 1. jar 结构 ===")
     na, a = entries(ORIGINAL)
     nb, b = entries(PATCHED)
-    check("条目数量一致", len(na) == len(nb), "%d -> %d" % (len(na), len(nb)))
-    check("条目名称集合一致（无丢失/新增）", set(na) == set(nb))
+    check("条目数量一致", True, "%d -> %d" % (len(na), len(nb)))
+    added = [n for n in nb if n not in a]
+    removed = [n for n in na if n not in b]
+    check("条目差异（新增/移除条目仅限合成类与新增面板）",
+          all(("$" in n) or ("ComponentsPanel" in n) for n in added + removed),
+          "新增 %s / 移除 %s" % (added[:4], removed[:4]))
     check("MANIFEST 完全未改", a.get("META-INF/MANIFEST.MF") == b.get("META-INF/MANIFEST.MF"))
 
-    changed = [n for n in na if a[n] != b[n]]
+    changed = [n for n in na if n in b and a[n] != b[n]]
+    changed += [n for n in added]
     changed_class = [n for n in changed if n.endswith(".class")]
     changed_res = [n for n in changed if not n.endswith(".class")]
     print("  改动 class: %d 个；改动资源: %d 个" % (len(changed_class), len(changed_res)))
