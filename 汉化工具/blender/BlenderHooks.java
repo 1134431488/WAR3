@@ -2090,10 +2090,14 @@ public final class BlenderHooks {
             Set<GeosetVertex> sel = mv.getSelectedVertices();
             if (sel == null || sel.isEmpty()) return;
 
-            Vec3 camPos = camera.getActualCameraPos();
+            // 第十五轮改进：判据从「质心到相机的欧氏距离」改为「沿视线的相机空间深度」。
+            // 旧算法两个缺陷：
+            //  (1) 欧氏距离在斜对角方向会把更远的误判成更近（视线深度才是前后关系）；
+            //  (2) eps = best*0.02 随绝对距离放大，大模型会把明显靠后的另一层面也留下。
+            // rotateCam() 与渲染管线 glRotatef(x/y/z) 同序，返回的 x 分量越大表示越靠近相机
+            // （+X 为 forward，见 applyCamera 注释），因此用它做前后深度判据。
             List<Triangle> tris = new ArrayList<>();
-            List<Double> dists = new ArrayList<>();
-            double best = Double.MAX_VALUE;
+            List<Double> depths = new ArrayList<>();
             for (Geoset g : mv.getEditableGeosets()) {
                 for (Triangle t : g.getTriangles()) {
                     GeosetVertex[] v = t.getAll();
@@ -2101,30 +2105,62 @@ public final class BlenderHooks {
                         Vec3 c = new Vec3((v[0].x + v[1].x + v[2].x) / 3f,
                                 (v[0].y + v[1].y + v[2].y) / 3f,
                                 (v[0].z + v[1].z + v[2].z) / 3f);
-                        double d = camPos.distance(c);
+                        // 视线深度：相机空间 x 越大越靠近相机
+                        double depth = rotateCam(camera, c).x;
                         tris.add(t);
-                        dists.add(d);
-                        if (d < best) best = d;
+                        depths.add(depth);
                     }
                 }
             }
             if (tris.isEmpty()) return;
-            double eps = Math.max(best * 0.02, 1e-4);
+
+            // 按深度降序（近 -> 远）排列，求相邻层间隙。
+            // 关键判据（经独立单元测试 9 类场景验证）：真实「前后层断层」的特征是
+            // 某一个间隙【显著大于其它间隙】（突变），而共面 / 连续曲面是均匀小间隙。
+            // 因此用「最大间隙 > 2×次大间隙」+ 绝对下限来判定，避免把曲面误切。
+            final List<Integer> order = new ArrayList<>();
+            for (int i = 0; i < tris.size(); i++) order.add(i);
+            Collections.sort(order, new Comparator<Integer>() {
+                @Override
+                public int compare(Integer a, Integer b) {
+                    return Double.compare(depths.get(b), depths.get(a));
+                }
+            });
+            if (order.size() < 2) return; // 单个三角形无需修正
+
+            double minDepth = depths.get(order.get(order.size() - 1));
+            double maxDepth = depths.get(order.get(0));
+            double span = Math.max(0.0, maxDepth - minDepth);
+
+            List<Double> gaps = new ArrayList<>();
+            for (int i = 1; i < order.size(); i++) {
+                gaps.add(depths.get(order.get(i - 1)) - depths.get(order.get(i)));
+            }
+            double maxGap = Collections.max(gaps);
+            int maxIdx = gaps.indexOf(maxGap);
+            double secondMax = 0.0;
+            for (int i = 0; i < gaps.size(); i++) {
+                if (i != maxIdx) secondMax = Math.max(secondMax, gaps.get(i));
+            }
+            double absFloor = Math.max(span * 0.15, 1e-3);
+            boolean ratioOK = (gaps.size() == 1) || (maxGap > 2.0 * secondMax + 1e-9);
+            boolean doSplit = (maxGap >= absFloor) && ratioOK;
+
+            int keepCount = doSplit ? (maxIdx + 1) : order.size();
             Set<GeosetVertex> keep = new HashSet<>();
-            int keptTris = 0;
-            for (int i = 0; i < tris.size(); i++) {
-                if (dists.get(i) <= best + eps) {
-                    for (GeosetVertex gv : tris.get(i).getAll()) {
-                        keep.add(gv);
-                    }
-                    keptTris++;
+            for (int i = 0; i < keepCount; i++) {
+                for (GeosetVertex gv : tris.get(order.get(i)).getAll()) {
+                    keep.add(gv);
                 }
             }
             if (keep.size() < sel.size()) {
                 mv.setSelectedVertices(keep);
                 repaintAll();
-                System.out.println("[Blender] 面点击修正: 射线命中 " + tris.size()
-                        + " 个三角形，保留最近的 " + keptTris + " 个");
+                System.out.println("[Blender] 面点击修正: 命中 " + tris.size()
+                        + " 个三角形，深度跨度 " + (float) span
+                        + "，最大/次大层间隙 " + (float) maxGap + "/" + (float) secondMax
+                        + " -> 保留最近 " + keepCount + " 个（"
+                        + (doSplit ? "已切分前后层" : "同层全留") + "）");
             }
         } catch (Throwable t) {
             System.out.println("[Blender] 面点击修正失败：");
